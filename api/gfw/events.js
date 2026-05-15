@@ -39,6 +39,7 @@ export default async function handler(req, res) {
         startDate: start.includes("T") ? start : `${start}T00:00:00Z`,
         endDate: end.includes("T") ? end : `${end}T00:00:00Z`,
         geometry: INDONESIA_POLY,
+        vesselTypes: ["FISHING"],
       }),
     });
 
