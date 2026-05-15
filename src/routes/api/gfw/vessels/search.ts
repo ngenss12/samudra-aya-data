@@ -9,11 +9,11 @@ export const Route = createFileRoute("/api/gfw/vessels/search")({
         const query = url.searchParams.get("query") || "";
         const limit = Math.min(50, Number(url.searchParams.get("limit") || "20"));
         if (!query.trim()) {
-          return Response.json({ vessels: [] });
+          return Response.json({ entries: [] });
         }
         try {
           const vessels = await searchVessels(query, limit);
-          return Response.json({ vessels });
+          return Response.json({ entries: vessels });
         } catch (e: any) {
           return Response.json({ vessels: [], error: e?.message || "search failed" }, { status: 500 });
         }

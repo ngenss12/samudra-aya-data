@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Samudra Aya — Pemantauan Kapal Indonesia</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --bg:          #090c10;
+      --surface:     #0f1318;
+      --surface-2:   #161b22;
+      --surface-3:   #1c2128;
+      --border:      #21262d;
+      --border-2:    #2d333b;
+      --text:        #cdd9e5;
+      --text-2:      #8b949e;
+      --text-3:      #545d68;
+      --blue:        #4493f8;
+      --blue-dim:    rgba(68,147,248,.12);
+      --green:       #3fb950;
+      --green-dim:   rgba(63,185,80,.12);
+      --orange:      #e3901a;
+      --orange-dim:  rgba(227,144,26,.12);
+      --yellow:      #d29922;
+      --yellow-dim:  rgba(210,153,34,.12);
+      --red:         #f85149;
+      --red-dim:     rgba(248,81,73,.12);
+      --radius:      6px;
+      --topbar-h:    48px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); font-family:'Segoe UI',system-ui,-apple-system,sans-serif; color:var(--text); overflow:hidden; font-size:13px; }
+    #map { position:fixed; inset:0; background:var(--bg); z-index:0; }
+
+    /* ── TOPBAR ─────────────────────────────────────────────────────────── */
+    #topbar {
+      position:fixed; top:0; left:0; right:0; height:var(--topbar-h);
+      background:rgba(9,12,16,.95); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:0;
+      z-index:900; backdrop-filter:blur(12px);
+    }
+    .tb-brand {
+      padding:0 18px; font-size:13px; font-weight:700; letter-spacing:.04em;
+      color:var(--text); white-space:nowrap; border-right:1px solid var(--border);
+      height:100%; display:flex; align-items:center; gap:8px;
+    }
+    .tb-brand-dot {
+      width:6px; height:6px; border-radius:50%; background:var(--green);
+      flex-shrink:0;
+    }
+    .tb-modes {
+      display:flex; height:100%; border-right:1px solid var(--border);
+    }
+    .mode-btn {
+      padding:0 18px; height:100%; border:none; background:none;
+      color:var(--text-2); font-size:12px; font-weight:600; letter-spacing:.03em;
+      cursor:pointer; position:relative; transition:color .15s; white-space:nowrap;
+    }
+    .mode-btn:hover { color:var(--text); }
+    .mode-btn.active-gfw { color:var(--green); }
+    .mode-btn.active-gfw::after {
+      content:''; position:absolute; bottom:0; left:18px; right:18px;
+      height:2px; background:var(--green); border-radius:1px 1px 0 0;
+    }
+    .mode-btn.active-ais { color:var(--blue); }
+    .mode-btn.active-ais::after {
+      content:''; position:absolute; bottom:0; left:18px; right:18px;
+      height:2px; background:var(--blue); border-radius:1px 1px 0 0;
+    }
+    .tb-status {
+      padding:0 16px; display:flex; align-items:center; gap:8px;
+      border-right:1px solid var(--border); height:100%;
+    }
+    #dot { width:7px; height:7px; border-radius:50%; background:var(--red); flex-shrink:0; transition:background .3s; }
+    #dot.on { background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+    #conn-label { font-size:12px; color:var(--text-2); }
+    .tb-counts {
+      display:flex; align-items:center; gap:16px;
+      padding:0 16px; border-right:1px solid var(--border); height:100%;
+    }
+    .tb-count { display:flex; flex-direction:column; gap:1px; }
+    .tb-count-label { font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-3); }
+    .tb-count-val   { font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text); line-height:1; }
+    #last-update { font-size:11px; color:var(--text-3); font-variant-numeric:tabular-nums; }
+    .tb-actions {
+      margin-left:auto; display:flex; align-items:center; height:100%;
+      border-left:1px solid var(--border);
+    }
+    .tb-btn {
+      padding:0 16px; height:100%; border:none; background:none;
+      color:var(--text-2); font-size:12px; font-weight:600; letter-spacing:.03em;
+      cursor:pointer; transition:color .15s; white-space:nowrap;
+      border-left:1px solid var(--border);
+    }
+    .tb-btn:first-child { border-left:none; }
+    .tb-btn:hover { color:var(--text); background:var(--surface); }
+    .tb-btn.active { color:var(--blue); }
+    #btn-refresh { display:none; }
+
+    /* ── STATS PANEL (kiri bawah topbar) ─────────────────────────────────── */
+    #stats-panel {
+      position:fixed; top:calc(var(--topbar-h) + 12px); left:12px;
+      width:200px; background:rgba(9,12,16,.94); border:1px solid var(--border);
+      border-radius:var(--radius); z-index:800; backdrop-filter:blur(12px);
+      overflow:hidden;
+    }
+    .stats-header {
+      padding:10px 12px 8px; border-bottom:1px solid var(--border);
+      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--text-3); display:flex; justify-content:space-between; align-items:center;
+    }
+    .stats-date { font-size:10px; color:var(--text-3); font-weight:400; letter-spacing:0; text-transform:none; }
+    .stats-body { padding:8px 0; }
+    .stat-row {
+      display:flex; align-items:center; gap:8px;
+      padding:5px 12px; position:relative;
+    }
+    .stat-type { font-size:11px; color:var(--text-2); width:68px; flex-shrink:0; }
+    .stat-bar-wrap { flex:1; height:4px; background:var(--surface-3); border-radius:2px; overflow:hidden; }
+    .stat-bar { height:100%; border-radius:2px; transition:width .4s ease; }
+    .stat-val { font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text); width:24px; text-align:right; flex-shrink:0; }
+    .stats-footer {
+      padding:8px 12px; border-top:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .stats-total-label { font-size:10px; color:var(--text-3); }
+    .stats-total-val   { font-size:13px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
+
+    /* AIS stats (ganti stats panel saat mode AIS) */
+    .ais-stat-row { padding:8px 12px; display:flex; justify-content:space-between; align-items:baseline; }
+    .ais-stat-label { font-size:11px; color:var(--text-2); }
+    .ais-stat-val   { font-size:18px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
+
+    /* ── LEGEND (kiri bawah, di bawah stats) ─────────────────────────────── */
+    #legend {
+      position:fixed; bottom:24px; left:12px;
+      background:rgba(9,12,16,.94); border:1px solid var(--border);
+      border-radius:var(--radius); z-index:800; backdrop-filter:blur(12px);
+      padding:10px 12px; font-size:11px; line-height:1.9; min-width:160px;
+    }
+    .leg-title { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-3); display:block; margin-bottom:4px; }
+    .leg-row { display:flex; align-items:center; gap:8px; }
+    .leg-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .leg-label { color:var(--text-2); }
+
+    /* ── LOADING ──────────────────────────────────────────────────────────── */
+    #loading {
+      position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+      background:rgba(9,12,16,.96); border:1px solid var(--border);
+      border-radius:var(--radius); padding:24px 32px; z-index:2000;
+      display:none; text-align:center; min-width:220px;
+    }
+    .load-bar {
+      width:100%; height:2px; background:var(--surface-3); border-radius:1px;
+      overflow:hidden; margin-bottom:14px;
+    }
+    .load-bar-fill {
+      height:100%; width:40%; background:var(--green);
+      border-radius:1px; animation:slide 1.2s ease-in-out infinite;
+    }
+    @keyframes slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(350%)} }
+    #loading-label { font-size:13px; color:var(--text-2); }
+
+    /* ── DETAIL PANEL (kanan) ─────────────────────────────────────────────── */
+    #sidebar {
+      position:fixed; right:0; top:var(--topbar-h); bottom:0;
+      width:min(320px, 90vw);
+      background:rgba(9,12,16,.97); border-left:1px solid var(--border);
+      z-index:850; display:flex; flex-direction:column;
+      transform:translateX(100%); transition:transform .22s ease;
+    }
+    #sidebar.open { transform:translateX(0); }
+
+    #sidebar-header {
+      padding:14px 16px 12px;
+      border-bottom:1px solid var(--border); flex-shrink:0;
+    }
+    .sb-title-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2px; }
+    #sidebar-title { font-size:15px; font-weight:700; color:var(--text); line-height:1.3; }
+    #sidebar-close {
+      background:none; border:none; color:var(--text-3); cursor:pointer;
+      font-size:16px; line-height:1; padding:2px 4px; border-radius:4px; flex-shrink:0; margin-top:2px;
+    }
+    #sidebar-close:hover { color:var(--text); background:var(--surface-3); }
+    .sb-sub { font-size:11px; color:var(--text-3); margin-top:3px; }
+
+    #sidebar-body { flex:1; overflow-y:auto; padding:0; }
+    #sidebar-body::-webkit-scrollbar { width:4px; }
+    #sidebar-body::-webkit-scrollbar-track { background:transparent; }
+    #sidebar-body::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:2px; }
+
+    /* Section dalam detail panel */
+    .sb-section { border-bottom:1px solid var(--border); }
+    .sb-section-title {
+      padding:10px 16px 8px;
+      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--text-3); display:flex; justify-content:space-between; align-items:center;
+    }
+    .sb-section-badge {
+      font-size:10px; font-weight:700; padding:2px 7px; border-radius:999px; letter-spacing:.02em;
+    }
+    .sb-row {
+      display:flex; justify-content:space-between; align-items:baseline;
+      padding:6px 16px; gap:12px;
+    }
+    .sb-row + .sb-row { border-top:1px solid var(--border); }
+    .sb-key { font-size:12px; color:var(--text-2); flex-shrink:0; }
+    .sb-val { font-size:12px; font-weight:600; color:var(--text); text-align:right; word-break:break-all; font-variant-numeric:tabular-nums; }
+    .sb-val.mono { font-family:'Cascadia Code','Consolas',monospace; font-size:11px; }
+    .sb-val.dim  { color:var(--text-2); font-weight:400; }
+    .sb-loading  { padding:10px 16px; font-size:11px; color:var(--text-3); display:flex; align-items:center; gap:6px; }
+
+    /* History list */
+    .hist-item {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:7px 16px; cursor:pointer; transition:background .1s;
+    }
+    .hist-item + .hist-item { border-top:1px solid var(--border); }
+    .hist-item:hover { background:var(--surface-2); }
+    .hist-date { font-size:11px; color:var(--text-2); font-variant-numeric:tabular-nums; }
+    .hist-badge { font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; }
+
+    /* Trajectory info bar */
+    #sb-traj-info {
+      padding:6px 16px; font-size:11px; color:var(--text-2);
+      border-top:1px solid var(--border); flex-shrink:0; min-height:28px;
+      display:flex; align-items:center;
+    }
+
+    /* Footer buttons */
+    #sidebar-footer {
+      padding:10px 12px; border-top:1px solid var(--border);
+      display:flex; gap:8px; flex-shrink:0;
+    }
+    .sb-btn {
+      flex:1; padding:9px 10px; border-radius:var(--radius);
+      border:1px solid var(--border-2); background:var(--surface-2);
+      color:var(--text-2); cursor:pointer; font-size:12px; font-weight:600;
+      letter-spacing:.02em; transition:.15s; line-height:1;
+    }
+    .sb-btn:hover    { border-color:var(--blue); color:var(--blue); }
+    .sb-btn.traj-on  { border-color:var(--red);  color:var(--red);  background:var(--red-dim); }
+    .sb-btn.loading  { opacity:.5; cursor:not-allowed; }
+
+    /* Track history list */
+    .track-list { max-height:260px; overflow-y:auto; }
+    .track-list::-webkit-scrollbar { width:3px; }
+    .track-list::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:2px; }
+    .track-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:6px 16px; cursor:pointer; transition:background .1s; gap:8px;
+    }
+    .track-row + .track-row { border-top:1px solid var(--border); }
+    .track-row:hover { background:var(--surface-2); }
+    .track-row-left { display:flex; align-items:flex-start; gap:8px; min-width:0; }
+    .track-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+    .track-time { font-size:11px; color:var(--text); font-variant-numeric:tabular-nums; }
+    .track-coord { font-size:10px; color:var(--text-3); font-variant-numeric:tabular-nums; margin-top:1px; }
+    .track-label { display:inline-block; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; background:var(--surface-3); color:var(--text-2); margin-left:4px; vertical-align:middle; }
+    .track-speed { font-size:11px; font-weight:700; flex-shrink:0; font-variant-numeric:tabular-nums; }
+
+    /* Spinner mikro */
+    .mini-spin {
+      display:inline-block; width:10px; height:10px;
+      border:2px solid var(--border-2); border-top-color:var(--blue);
+      border-radius:50%; animation:spin .7s linear infinite;
+    }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* ── TOOL PANEL ───────────────────────────────────────────────────────── */
+    #tool-panel {
+      position:fixed; top:calc(var(--topbar-h) + 8px); right:8px;
+      width:min(360px, calc(100vw - 16px)); max-height:calc(100vh - var(--topbar-h) - 16px);
+      overflow:auto; background:rgba(9,12,16,.97); border:1px solid var(--border);
+      border-radius:var(--radius); z-index:1000; display:none;
+    }
+    .panel-header {
+      display:flex; border-bottom:1px solid var(--border);
+    }
+    .panel-tab {
+      flex:1; padding:11px 12px; border:none; background:none;
+      color:var(--text-2); font-size:11px; font-weight:700; letter-spacing:.06em;
+      text-transform:uppercase; cursor:pointer; transition:color .15s;
+      border-bottom:2px solid transparent;
+    }
+    .panel-tab.active { color:var(--blue); border-bottom-color:var(--blue); }
+    .panel-tab:hover:not(.active) { color:var(--text); }
+    .panel-body { padding:12px; }
+    .p-label { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-3); margin-bottom:8px; display:block; }
+    .p-row { display:flex; gap:8px; margin-bottom:8px; }
+    .p-input {
+      flex:1; min-width:0; border:1px solid var(--border-2); background:var(--surface-2);
+      color:var(--text); border-radius:var(--radius); padding:8px 10px; font-size:12px;
+    }
+    .p-input:focus { outline:none; border-color:var(--blue); }
+    .p-btn {
+      border:1px solid var(--border-2); background:var(--surface-2); color:var(--text-2);
+      border-radius:var(--radius); padding:8px 14px; cursor:pointer; font-size:12px;
+      font-weight:600; white-space:nowrap; transition:.15s;
+    }
+    .p-btn:hover { border-color:var(--blue); color:var(--blue); }
+    .p-btn.primary { border-color:var(--blue); color:var(--blue); background:var(--blue-dim); }
+    .p-btn:disabled { opacity:.4; cursor:not-allowed; }
+    #query-list, #vessel-results { display:grid; gap:6px; }
+    .query-item {
+      border:1px solid var(--border); border-radius:var(--radius);
+      padding:10px; background:var(--surface-2);
+    }
+    .query-item-name { font-size:12px; font-weight:700; color:var(--text); margin-bottom:4px; }
+    .query-item-meta { font-size:11px; color:var(--text-2); line-height:1.6; }
+    .vessel-item {
+      border:1px solid var(--border); border-radius:var(--radius);
+      padding:9px; background:var(--surface-2); cursor:pointer; text-align:left;
+      width:100%; transition:border-color .15s;
+    }
+    .vessel-item:hover  { border-color:var(--blue); }
+    .vessel-item.active { border-color:var(--green); background:var(--green-dim); }
+    .vessel-item-name { font-size:12px; font-weight:700; color:var(--text); margin-bottom:3px; }
+    .vessel-item-meta { font-size:11px; color:var(--text-2); }
+    #track-summary { margin-top:8px; font-size:11px; color:var(--text-2); line-height:1.6; }
+
+    /* ── AIS KEY MODAL ────────────────────────────────────────────────────── */
+    #key-modal {
+      position:fixed; inset:0; background:rgba(0,0,0,.65);
+      z-index:3000; display:none; align-items:center; justify-content:center;
+    }
+    #key-modal.open { display:flex; }
+    #key-box {
+      background:var(--surface); border:1px solid var(--border-2);
+      border-radius:var(--radius); padding:24px;
+      width:min(400px, calc(100vw - 32px));
+    }
+    #key-box h3 { font-size:14px; font-weight:700; margin-bottom:6px; }
+    #key-box p  { font-size:12px; color:var(--text-2); margin-bottom:14px; line-height:1.6; }
+    #key-input  {
+      width:100%; background:var(--bg); border:1px solid var(--border-2);
+      color:var(--text); border-radius:var(--radius); padding:9px 11px;
+      font-size:12px; font-family:monospace; margin-bottom:14px;
+    }
+    #key-input:focus { outline:none; border-color:var(--blue); }
+    .key-actions { display:flex; gap:8px; justify-content:flex-end; }
+    .key-btn { padding:8px 18px; border-radius:var(--radius); border:1px solid var(--border-2); cursor:pointer; font-size:12px; font-weight:600; }
+    .key-btn.primary   { border-color:var(--blue); color:var(--blue); background:var(--blue-dim); }
+    .key-btn.secondary { background:none; color:var(--text-2); }
+
+    /* ── POPUP LEAFLET ────────────────────────────────────────────────────── */
+    .leaflet-container { background:var(--bg); }
+    .leaflet-control-zoom a { background:var(--surface) !important; color:var(--text) !important; border-color:var(--border) !important; }
+    .leaflet-control-attribution { background:rgba(9,12,16,.7) !important; color:var(--text-3) !important; font-size:10px !important; }
+    .leaflet-control-attribution a { color:var(--blue) !important; }
+    .leaflet-popup-content-wrapper { background:var(--surface) !important; color:var(--text) !important; border:1px solid var(--border-2) !important; border-radius:var(--radius) !important; box-shadow:0 8px 24px rgba(0,0,0,.5) !important; }
+    .leaflet-popup-tip { background:var(--surface) !important; }
+    .leaflet-popup-content { margin:12px 14px !important; font-size:12px; line-height:1.6; }
+    .popup-name  { font-size:13px; font-weight:700; color:var(--text); margin-bottom:6px; }
+    .popup-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; margin-bottom:8px; }
+    .popup-row   { display:flex; justify-content:space-between; gap:16px; }
+    .popup-row span:first-child { color:var(--text-2); }
+    .popup-row b { color:var(--text); }
+    .popup-coord { font-size:10px; color:var(--text-3); margin-top:6px; border-top:1px solid var(--border); padding-top:6px; font-variant-numeric:tabular-nums; }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- TOPBAR -->
+<header id="topbar">
+  <div class="tb-brand">
+    <span class="tb-brand-dot"></span>
+    SAMUDRA AYA
+  </div>
+  <div class="tb-modes">
+    <button class="mode-btn active-gfw" id="btn-gfw" onclick="setMode('gfw')">GFW Events</button>
+    <button class="mode-btn" id="btn-ais" onclick="setMode('ais')">AIS Live</button>
+  </div>
+  <div class="tb-status">
+    <span id="dot"></span>
+    <span id="conn-label">Memuat…</span>
+  </div>
+  <div class="tb-counts">
+    <div class="tb-count">
+      <span class="tb-count-label">Kapal</span>
+      <span class="tb-count-val" id="ship-count">0</span>
+    </div>
+    <div class="tb-count">
+      <span class="tb-count-label">Pesan</span>
+      <span class="tb-count-val" id="msg-count">0</span>
+    </div>
+    <span id="last-update">—</span>
+  </div>
+  <div class="tb-actions">
+    <button class="tb-btn" id="btn-tools" onclick="togglePanel()">Query & Track</button>
+    <button class="tb-btn" id="btn-refresh" onclick="refreshGfw()">Perbarui</button>
+    <button class="tb-btn" id="btn-aiskey" onclick="openKeyModal()">Set AIS Key</button>
+  </div>
+</header>
+
+<!-- STATS PANEL -->
+<div id="stats-panel">
+  <div class="stats-header">
+    <span id="stats-mode-label">GFW EVENTS</span>
+    <span class="stats-date" id="stats-range">—</span>
+  </div>
+  <div class="stats-body" id="stats-body">
+    <div class="stat-row">
+      <span class="stat-type">Fishing</span>
+      <div class="stat-bar-wrap"><div class="stat-bar" id="bar-fishing" style="background:var(--green);width:0%"></div></div>
+      <span class="stat-val" id="cnt-fishing">0</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-type">Encounter</span>
+      <div class="stat-bar-wrap"><div class="stat-bar" id="bar-encounter" style="background:var(--orange);width:0%"></div></div>
+      <span class="stat-val" id="cnt-encounter">0</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-type">Loitering</span>
+      <div class="stat-bar-wrap"><div class="stat-bar" id="bar-loitering" style="background:var(--yellow);width:0%"></div></div>
+      <span class="stat-val" id="cnt-loitering">0</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-type">Lainnya</span>
+      <div class="stat-bar-wrap"><div class="stat-bar" id="bar-other" style="background:var(--text-3);width:0%"></div></div>
+      <span class="stat-val" id="cnt-other">0</span>
+    </div>
+  </div>
+  <div class="stats-footer">
+    <span class="stats-total-label">Total events</span>
+    <span class="stats-total-val" id="stats-total">0</span>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div id="legend">
+  <span class="leg-title">Tipe Event</span>
+  <div class="leg-row"><span class="leg-dot" style="background:var(--green)"></span><span class="leg-label">Fishing</span></div>
+  <div class="leg-row"><span class="leg-dot" style="background:var(--orange)"></span><span class="leg-label">Encounter</span></div>
+  <div class="leg-row"><span class="leg-dot" style="background:var(--yellow)"></span><span class="leg-label">Loitering</span></div>
+</div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="load-bar"><div class="load-bar-fill"></div></div>
+  <div id="loading-label">Mengambil data GFW…</div>
+</div>
+
+<!-- AIS KEY MODAL -->
+<div id="key-modal">
+  <div id="key-box">
+    <h3>AISStream API Key</h3>
+    <p>Diperlukan untuk mode AIS Live. API key gratis tersedia di <a href="https://aisstream.io" target="_blank" style="color:var(--blue)">aisstream.io</a>.</p>
+    <input id="key-input" type="password" placeholder="Masukkan API key…" />
+    <div class="key-actions">
+      <button class="key-btn secondary" onclick="closeKeyModal()">Batal</button>
+      <button class="key-btn primary" onclick="saveKey()">Simpan & Aktifkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOOL PANEL -->
+<div id="tool-panel">
+  <div class="panel-header">
+    <button class="panel-tab active" id="tab-queries" onclick="switchTab('queries')">GFWR Query</button>
+    <button class="panel-tab"        id="tab-track"   onclick="switchTab('track')">Trajectory</button>
+  </div>
+  <div class="panel-body">
+    <div id="queries-view">
+      <div id="query-list" style="color:var(--text-2);font-size:12px">Klik untuk memuat katalog…</div>
+    </div>
+    <div id="track-view" style="display:none">
+      <span class="p-label">Cari Kapal</span>
+      <div class="p-row">
+        <input class="p-input" id="vessel-query" placeholder="MMSI / IMO / nama kapal" />
+        <button class="p-btn primary" onclick="searchVessel()">Cari</button>
+      </div>
+      <div id="vessel-results"></div>
+      <span class="p-label" style="margin-top:10px;display:block">Rentang Tanggal</span>
+      <div class="p-row">
+        <input type="date" class="p-input" id="track-start" />
+        <input type="date" class="p-input" id="track-end" />
+      </div>
+      <div class="p-row">
+        <button class="p-btn primary" id="load-track" onclick="loadTrack()" disabled style="flex:1">Plot Trajectory</button>
+        <button class="p-btn" onclick="clearTraj()">Hapus</button>
+      </div>
+      <div id="track-summary"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<aside id="sidebar">
+  <div id="sidebar-header">
+    <div class="sb-title-row">
+      <span id="sidebar-title">Detail Kapal</span>
+      <button id="sidebar-close" onclick="closeSidebar()">✕</button>
+    </div>
+    <div class="sb-sub" id="sidebar-sub"></div>
+  </div>
+  <div id="sidebar-body"></div>
+  <div id="sb-traj-info"></div>
+  <div id="sidebar-footer">
+    <button class="sb-btn" id="sb-traj-btn" onclick="toggleTraj()">Tampilkan Trajectory</button>
+    <button class="sb-btn" onclick="zoomTo()">Zoom ke Posisi</button>
+  </div>
+</aside>
+
+<script>
+// ── MAP ───────────────────────────────────────────────────────────────────────
+const map = L.map('map', { zoomControl:false }).setView([-2.5, 117.0], 5);
+L.control.zoom({ position:'bottomright' }).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com">CARTO</a>',
+  subdomains:'abcd', maxZoom:19,
+}).addTo(map);
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const ships          = {};
+let   gfwEvents      = [];
+const trajLayer        = L.layerGroup().addTo(map);
+const sidebarTrajLayer = L.layerGroup().addTo(map);
+const historyLayer     = L.layerGroup().addTo(map);
+
+let mode               = 'gfw';
+let msgCount           = 0;
+let aisKey             = localStorage.getItem('ais_key') || '';
+let aisWs              = null;
+let sidebarKey         = null;
+let trajActive         = false;
+let queryCatalogLoaded = false;
+let selectedVessel     = null;
+
+const GFW_CACHE_KEY = 'gfw-events-cache-v2';
+const GFW_CACHE_TTL = 10 * 60 * 1000;
+const AIS_TRAIL_MAX = 120;
+const AIS_BBOXES    = [
+  [[-8.0,105.0],[-4.0,116.0]],
+  [[ 1.0, 99.0],[ 6.0,104.0]],
+  [[-8.0,112.0],[-6.5,113.5]],
+];
+
+// ── COLORS ────────────────────────────────────────────────────────────────────
+function aisColor(speed) {
+  if (speed == null) return '#545d68';
+  if (speed < 1)  return '#f85149';
+  if (speed < 5)  return '#e3901a';
+  if (speed < 12) return '#4493f8';
+  return '#3fb950';
+}
+function gfwColor(type) {
+  switch ((type||'').toUpperCase()) {
+    case 'FISHING':   return '#3fb950';
+    case 'ENCOUNTER': return '#e3901a';
+    case 'LOITERING': return '#d29922';
+    default:          return '#545d68';
+  }
+}
+
+// ── ICONS ─────────────────────────────────────────────────────────────────────
+function makeAisIcon(speed, heading) {
+  const c = aisColor(speed);
+  const r = (heading != null && heading < 360) ? heading : 0;
+  return L.divIcon({
+    className:'',
+    html:`<div style="transform:rotate(${r}deg);filter:drop-shadow(0 0 3px ${c}99)">
+      <svg viewBox="0 0 20 20" width="16" height="16">
+        <path d="M10 1 L17 17 L10 13 L3 17 Z" fill="${c}" stroke="#090c10" stroke-width="1.5"/>
+      </svg></div>`,
+    iconSize:[16,16], iconAnchor:[8,8],
+  });
+}
+function makeGfwIcon(type, selected) {
+  const c  = gfwColor(type);
+  const sz = selected ? 15 : 10;
+  const glow = selected ? `box-shadow:0 0 0 2px ${c}33,0 0 8px ${c}88;` : '';
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${c};border:1.5px solid #090c10;${glow}transition:.12s"></div>`,
+    iconSize:[sz,sz], iconAnchor:[sz/2,sz/2],
+  });
+}
+
+// ── STATUS ────────────────────────────────────────────────────────────────────
+function setStatus(online, label) {
+  document.getElementById('dot').classList.toggle('on', online);
+  document.getElementById('conn-label').textContent = label;
+}
+function setLoading(show, label) {
+  document.getElementById('loading').style.display = show ? 'block' : 'none';
+  if (label) document.getElementById('loading-label').textContent = label;
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function updateStats() {
+  if (mode !== 'gfw') return;
+  const counts = { FISHING:0, ENCOUNTER:0, LOITERING:0, OTHER:0 };
+  gfwEvents.forEach(ev => {
+    const t = (ev.type||'').toUpperCase();
+    if (counts[t] !== undefined) counts[t]++;
+    else counts.OTHER++;
+  });
+  const total = gfwEvents.length;
+  document.getElementById('cnt-fishing').textContent   = counts.FISHING;
+  document.getElementById('cnt-encounter').textContent = counts.ENCOUNTER;
+  document.getElementById('cnt-loitering').textContent = counts.LOITERING;
+  document.getElementById('cnt-other').textContent     = counts.OTHER;
+  document.getElementById('stats-total').textContent   = total;
+  const pct = v => total ? Math.max(4, Math.round(v / total * 100)) : 0;
+  document.getElementById('bar-fishing').style.width   = pct(counts.FISHING)   + '%';
+  document.getElementById('bar-encounter').style.width = pct(counts.ENCOUNTER) + '%';
+  document.getElementById('bar-loitering').style.width = pct(counts.LOITERING) + '%';
+  document.getElementById('bar-other').style.width     = pct(counts.OTHER)     + '%';
+}
+
+function setStatsMode(m) {
+  const panel = document.getElementById('stats-panel');
+  const body  = document.getElementById('stats-body');
+  document.getElementById('stats-mode-label').textContent = m === 'gfw' ? 'GFW EVENTS' : 'AIS LIVE';
+  if (m === 'ais') {
+    body.innerHTML = `
+      <div class="ais-stat-row"><span class="ais-stat-label">Kapal Aktif</span><span class="ais-stat-val" id="ais-ship-val">0</span></div>
+      <div class="ais-stat-row"><span class="ais-stat-label">Pesan Diterima</span><span class="ais-stat-val" id="ais-msg-val">0</span></div>`;
+  } else {
+    body.innerHTML = `
+      <div class="stat-row"><span class="stat-type">Fishing</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-fishing" style="background:var(--green);width:0%"></div></div><span class="stat-val" id="cnt-fishing">0</span></div>
+      <div class="stat-row"><span class="stat-type">Encounter</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-encounter" style="background:var(--orange);width:0%"></div></div><span class="stat-val" id="cnt-encounter">0</span></div>
+      <div class="stat-row"><span class="stat-type">Loitering</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-loitering" style="background:var(--yellow);width:0%"></div></div><span class="stat-val" id="cnt-loitering">0</span></div>
+      <div class="stat-row"><span class="stat-type">Lainnya</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-other" style="background:var(--text-3);width:0%"></div></div><span class="stat-val" id="cnt-other">0</span></div>`;
+  }
+  document.getElementById('stats-footer').style.display = m === 'gfw' ? 'flex' : 'none';
+}
+
+// ── MODE SWITCH ───────────────────────────────────────────────────────────────
+function setMode(m) {
+  if (m === mode) return;
+  mode = m;
+  clearAllMarkers();
+  closeSidebar();
+  trajLayer.clearLayers(); sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
+  gfwEvents = [];
+
+  document.getElementById('btn-gfw').className = 'mode-btn' + (m === 'gfw' ? ' active-gfw' : '');
+  document.getElementById('btn-ais').className = 'mode-btn' + (m === 'ais' ? ' active-ais' : '');
+  document.getElementById('btn-refresh').style.display = m === 'gfw' ? 'block' : 'none';
+  document.getElementById('stats-range').textContent = '—';
+  setStatsMode(m);
+  updateLegend(m);
+  document.getElementById('stats-total').textContent = '0';
+
+  if (m === 'ais') {
+    stopAis();
+    if (!aisKey) { openKeyModal(); return; }
+    startAis();
+  } else {
+    stopAis();
+    loadGfw();
+  }
+}
+
+function updateLegend(m) {
+  const el = document.getElementById('legend');
+  if (m === 'ais') {
+    el.innerHTML = `
+      <span class="leg-title">Kecepatan</span>
+      <div class="leg-row"><span class="leg-dot" style="background:#f85149"></span><span class="leg-label">Berhenti &lt;1 kn</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#e3901a"></span><span class="leg-label">Lambat 1–5 kn</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#4493f8"></span><span class="leg-label">Normal 5–12 kn</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#3fb950"></span><span class="leg-label">Cepat &gt;12 kn</span></div>`;
+  } else {
+    el.innerHTML = `
+      <span class="leg-title">Tipe Event</span>
+      <div class="leg-row"><span class="leg-dot" style="background:var(--green)"></span><span class="leg-label">Fishing</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:var(--orange)"></span><span class="leg-label">Encounter</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:var(--yellow)"></span><span class="leg-label">Loitering</span></div>`;
+  }
+}
+
+// ── AIS ───────────────────────────────────────────────────────────────────────
+function startAis() {
+  if (!aisKey) return;
+  setStatus(false, 'Menghubungkan…');
+  aisWs = new WebSocket('wss://stream.aisstream.io/v0/stream');
+  aisWs.onopen = () => {
+    aisWs.send(JSON.stringify({ APIKey:aisKey, BoundingBoxes:AIS_BBOXES, FilterMessageTypes:['PositionReport','ShipStaticData'] }));
+    setStatus(true, 'AIS Online');
+  };
+  aisWs.onmessage = e => {
+    try { const p = parseAis(JSON.parse(e.data)); if (p) processMarker(p); } catch {}
+  };
+  aisWs.onclose = () => {
+    setStatus(false, 'AIS Terputus');
+    if (mode === 'ais') setTimeout(startAis, 5000);
+  };
+  aisWs.onerror = () => aisWs.close();
+}
+function stopAis() {
+  if (aisWs) { aisWs.onclose = null; aisWs.close(); aisWs = null; }
+}
+function parseAis(msg) {
+  const type = msg.MessageType, meta = msg.MetaData || {};
+  const lat = meta.latitude, lon = meta.longitude;
+  if (!lat || !lon) return null;
+  const base = { source:'ais', key:String(meta.MMSI||''), mmsi:meta.MMSI, name:(meta.ShipName||'').trim(), lat, lon, waktu:meta.time_utc, speed:null, course:null, heading:null, navStatus:null, destination:null };
+  if (type === 'PositionReport') { const pr = msg.Message?.PositionReport||{}; base.speed=pr.Sog; base.course=pr.Cog; base.heading=pr.TrueHeading; base.navStatus=pr.NavigationalStatus; }
+  else if (type === 'ShipStaticData') { const sd = msg.Message?.ShipStaticData||{}; base.destination=(sd.Destination||'').trim(); }
+  return base.key ? base : null;
+}
+
+// ── GFW ───────────────────────────────────────────────────────────────────────
+function gfwDateRange() {
+  const end = new Date(), start = new Date(end);
+  start.setDate(start.getDate() - 30);
+  return { start:start.toISOString().slice(0,10), end:end.toISOString().slice(0,10) };
+}
+
+async function loadGfw(forceRefresh) {
+  if (!forceRefresh) {
+    try {
+      const raw = localStorage.getItem(GFW_CACHE_KEY);
+      if (raw) {
+        const c = JSON.parse(raw);
+        if (c?.t && Date.now()-c.t < GFW_CACHE_TTL && Array.isArray(c.events)) {
+          gfwEvents = c.events;
+          c.events.forEach(ev => processMarker(ev));
+          setStatus(true, `GFW · ${c.events.length} events`);
+          updateStats();
+          if (c.range) document.getElementById('stats-range').textContent = c.range;
+          document.getElementById('btn-refresh').style.display = 'block';
+          return;
+        }
+      }
+    } catch {}
+  }
+  clearAllMarkers(); gfwEvents = [];
+  setLoading(true, 'Mengambil data GFW 30 hari terakhir…');
+  setStatus(false, 'Memuat…');
+  try {
+    const { start, end } = gfwDateRange();
+    const r = await fetch(`/api/gfw/events?start_date=${start}&end_date=${end}`);
+    const j = await r.json();
+    const evs = (j.events||[]).map(normalizeGfw).filter(Boolean);
+    gfwEvents = evs;
+    evs.forEach(ev => processMarker(ev));
+    const rangeStr = `${fmtDateShort(start)} – ${fmtDateShort(end)}`;
+    document.getElementById('stats-range').textContent = rangeStr;
+    setStatus(true, `GFW · ${evs.length} events`);
+    updateStats();
+    try { localStorage.setItem(GFW_CACHE_KEY, JSON.stringify({ t:Date.now(), events:evs, range:rangeStr })); } catch {}
+  } catch (err) { setStatus(false, 'Gagal: ' + err.message); }
+  finally { setLoading(false); document.getElementById('btn-refresh').style.display = 'block'; }
+}
+
+function refreshGfw() {
+  localStorage.removeItem(GFW_CACHE_KEY);
+  closeSidebar(); trajLayer.clearLayers(); sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
+  loadGfw(true);
+}
+
+function normalizeGfw(ev) {
+  if (!Number.isFinite(ev.lat) || !Number.isFinite(ev.lon)) return null;
+  return { source:'gfw', key:ev.id, id:ev.id, type:ev.type, lat:ev.lat, lon:ev.lon, mmsi:ev.mmsi, name:ev.shipName||'Unknown', flag:ev.flag, vesselId:ev.vesselId, start:ev.start, end:ev.end, durationHours:ev.durationHours };
+}
+
+// ── MARKERS ───────────────────────────────────────────────────────────────────
+function processMarker(d) {
+  if (!d.key) return;
+  const icon = d.source === 'gfw' ? makeGfwIcon(d.type, false) : makeAisIcon(d.speed, d.heading < 511 ? d.heading : d.course);
+  if (ships[d.key]) {
+    ships[d.key].marker.setLatLng([d.lat,d.lon]).setIcon(icon);
+    ships[d.key].data = { ...ships[d.key].data, ...d };
+    ships[d.key].lastSeen = Date.now();
+    if (d.source === 'ais') { ships[d.key].trail.push([d.lat,d.lon]); if (ships[d.key].trail.length > AIS_TRAIL_MAX) ships[d.key].trail.shift(); }
+    if (sidebarKey === d.key) renderSidebarBody(ships[d.key].data);
+  } else {
+    const marker = L.marker([d.lat,d.lon], { icon }).addTo(map);
+    marker.on('click', () => d.source === 'gfw' ? openGfwDetail(d.key) : openSidebar(d.key));
+    ships[d.key] = { marker, data:d, lastSeen:Date.now(), trail:d.source==='ais'?[[d.lat,d.lon]]:[] };
+  }
+  if (d.source === 'ais') {
+    msgCount++;
+    document.getElementById('msg-count').textContent = msgCount;
+    document.getElementById('last-update').textContent = new Date().toLocaleTimeString('id-ID');
+    const sv = document.getElementById('ais-ship-val'); if (sv) sv.textContent = Object.keys(ships).length;
+    const mv = document.getElementById('ais-msg-val');  if (mv) mv.textContent = msgCount;
+  }
+  document.getElementById('ship-count').textContent = Object.keys(ships).length;
+}
+
+function clearAllMarkers() {
+  Object.values(ships).forEach(s => map.removeLayer(s.marker));
+  for (const k in ships) delete ships[k];
+  msgCount = 0;
+  document.getElementById('ship-count').textContent = '0';
+  document.getElementById('msg-count').textContent  = '0';
+}
+
+// ── GFW DETAIL ───────────────────────────────────────────────────────────────
+function openGfwDetail(key) {
+  const s = ships[key]; if (!s) return;
+  const d = s.data;
+  if (sidebarKey && ships[sidebarKey]?.data?.source === 'gfw')
+    ships[sidebarKey].marker.setIcon(makeGfwIcon(ships[sidebarKey].data.type, false));
+  s.marker.setIcon(makeGfwIcon(d.type, true));
+  sidebarKey = key; trajActive = false;
+  sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
+  showGfwPopup(d, s.marker);
+  renderSidebarGfw(d);
+  document.getElementById('sidebar').classList.add('open');
+  showHistoryMarkers(d);
+  if (d.mmsi || d.vesselId) fetchVesselIdentity(d.mmsi, d.vesselId);
+  const btn = document.getElementById('sb-traj-btn');
+  btn.className = 'sb-btn';
+  btn.textContent = d.vesselId ? 'Tampilkan Trajectory' : 'Trajectory (N/A)';
+  document.getElementById('sb-traj-info').textContent = '';
+}
+
+function showGfwPopup(d, marker) {
+  const c = gfwColor(d.type);
+  marker.bindPopup(`
+    <div class="popup-name">${esc(d.name||'Unknown')}</div>
+    <span class="popup-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${esc(d.type||'—')}</span>
+    <div style="margin-top:6px">
+      ${d.mmsi ? `<div class="popup-row"><span>MMSI</span><b>${esc(String(d.mmsi))}</b></div>` : ''}
+      ${d.flag ? `<div class="popup-row"><span>Bendera</span><b>${esc(d.flag)}</b></div>` : ''}
+      <div class="popup-row"><span>Durasi</span><b>${fmtDur(d.durationHours)}</b></div>
+    </div>
+    <div class="popup-coord">${d.lat.toFixed(4)}°, ${d.lon.toFixed(4)}° &nbsp;·&nbsp; ${fmtD(d.start)}</div>
+  `, { maxWidth:230, autoPanPadding:[20,80] }).openPopup();
+}
+
+function showHistoryMarkers(d) {
+  const same = gfwEvents.filter(ev =>
+    ev.key !== d.key && ((d.vesselId && ev.vesselId === d.vesselId) || (d.mmsi && ev.mmsi && String(ev.mmsi)===String(d.mmsi)))
+  );
+  same.forEach(ev => {
+    const c = gfwColor(ev.type);
+    L.circleMarker([ev.lat,ev.lon], { radius:5, color:c, fillColor:c, fillOpacity:0.25, weight:1.5, opacity:0.45 })
+      .bindPopup(`<b>${esc(ev.type)}</b><br>${fmtD(ev.start)}`)
+      .addTo(historyLayer);
+  });
+}
+
+async function fetchVesselIdentity(mmsi, vesselId) {
+  const el = document.getElementById('sb-identity'); if (!el) return;
+  const query = mmsi ? String(mmsi) : vesselId; if (!query) return;
+  try {
+    const r = await fetch(`/api/gfw/vessels/search?query=${encodeURIComponent(query)}&limit=1`);
+    const d = await r.json();
+    const v = d.entries?.[0];
+    if (!v) { el.innerHTML = '<div class="sb-section-title">IDENTITAS GFW</div><div style="padding:8px 16px;font-size:12px;color:var(--text-3)">Tidak ditemukan di database GFW.</div>'; return; }
+    el.innerHTML = `
+      <div class="sb-section-title">IDENTITAS GFW</div>
+      ${v.ship_name ? `<div class="sb-row"><span class="sb-key">Nama Resmi</span><span class="sb-val">${esc(v.ship_name)}</span></div>` : ''}
+      ${v.imo       ? `<div class="sb-row"><span class="sb-key">IMO</span><span class="sb-val mono">${esc(String(v.imo))}</span></div>` : ''}
+      ${v.callsign  ? `<div class="sb-row"><span class="sb-key">Callsign</span><span class="sb-val mono">${esc(v.callsign)}</span></div>` : ''}
+      ${v.flag      ? `<div class="sb-row"><span class="sb-key">Bendera</span><span class="sb-val">${esc(v.flag)}</span></div>` : ''}`;
+  } catch {
+    if (el) el.innerHTML = '<div class="sb-section-title">IDENTITAS GFW</div><div style="padding:8px 16px;font-size:12px;color:var(--text-3)">Gagal memuat.</div>';
+  }
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────────
+function openSidebar(key) {
+  const s = ships[key]; if (!s) return;
+  sidebarKey = key; trajActive = false;
+  sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
+  document.getElementById('sb-traj-btn').className = 'sb-btn';
+  document.getElementById('sb-traj-btn').textContent = 'Aktifkan Trajectory';
+  document.getElementById('sb-traj-info').textContent = '';
+  renderSidebarBody(s.data);
+  document.getElementById('sidebar').classList.add('open');
+}
+
+function closeSidebar() {
+  if (sidebarKey && ships[sidebarKey]?.data?.source === 'gfw')
+    ships[sidebarKey].marker.setIcon(makeGfwIcon(ships[sidebarKey].data.type, false));
+  if (trajActive) showAllMarkers();
+  sidebarKey = null; trajActive = false;
+  sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function zoomTo() {
+  if (!sidebarKey || !ships[sidebarKey]) return;
+  const d = ships[sidebarKey].data;
+  map.setView([d.lat, d.lon], 12, { animate:true });
+}
+
+const fmt    = v => v != null ? String(v) : '—';
+const fmtD   = v => v ? new Date(v).toLocaleString('id-ID') : '—';
+const fmtDur = h => { if (!h) return '—'; const hh=Math.floor(h), mm=Math.round((h-hh)*60); return `${hh}j ${mm}m`; };
+const fmtDateShort = s => { const d=new Date(s); return d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); };
+
+function renderSidebarGfw(d) {
+  const c = gfwColor(d.type);
+  document.getElementById('sidebar-title').textContent = d.name || 'Unknown';
+  document.getElementById('sidebar-sub').textContent   = d.flag ? `Bendera: ${d.flag}` : '';
+
+  const same = gfwEvents.filter(ev =>
+    ev.key !== d.key && ((d.vesselId && ev.vesselId === d.vesselId) || (d.mmsi && ev.mmsi && String(ev.mmsi)===String(d.mmsi)))
+  ).sort((a,b) => new Date(b.start)-new Date(a.start));
+
+  const histHtml = same.length
+    ? same.map(ev => { const ec=gfwColor(ev.type); return `
+        <div class="hist-item" onclick="focusHistEvent(${ev.lat},${ev.lon})">
+          <span class="hist-date">${fmtD(ev.start)}</span>
+          <span class="hist-badge" style="background:${ec}22;color:${ec};border:1px solid ${ec}33">${esc(ev.type)}</span>
+        </div>`; }).join('')
+    : '<div style="padding:8px 16px;font-size:11px;color:var(--text-3)">Tidak ada event lain dalam 30 hari.</div>';
+
+  document.getElementById('sidebar-body').innerHTML = `
+    <div class="sb-section">
+      <div class="sb-section-title">
+        EVENT
+        <span class="sb-section-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${esc(d.type||'—')}</span>
+      </div>
+      <div class="sb-row"><span class="sb-key">Durasi</span><span class="sb-val">${fmtDur(d.durationHours)}</span></div>
+      <div class="sb-row"><span class="sb-key">Mulai</span><span class="sb-val">${fmtD(d.start)}</span></div>
+      <div class="sb-row"><span class="sb-key">Selesai</span><span class="sb-val">${fmtD(d.end)}</span></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-title">POSISI</div>
+      <div class="sb-row"><span class="sb-key">Lintang</span><span class="sb-val mono">${d.lat.toFixed(6)}°</span></div>
+      <div class="sb-row"><span class="sb-key">Bujur</span><span class="sb-val mono">${d.lon.toFixed(6)}°</span></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-title">DATA AIS</div>
+      <div class="sb-row"><span class="sb-key">MMSI</span><span class="sb-val mono">${fmt(d.mmsi)}</span></div>
+      <div class="sb-row"><span class="sb-key">Event ID</span><span class="sb-val mono dim" style="font-size:10px">${fmt(d.id)}</span></div>
+    </div>
+    <div class="sb-section" id="sb-identity">
+      <div class="sb-section-title">IDENTITAS GFW</div>
+      <div class="sb-loading"><span class="mini-spin"></span> Memuat dari GFW…</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-title">HISTORY POSISI <span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">${same.length} event lain</span></div>
+      ${histHtml}
+    </div>`;
+}
+
+function renderSidebarBody(d) {
+  if (d.source === 'gfw') { renderSidebarGfw(d); return; }
+  const c = aisColor(d.speed);
+  document.getElementById('sidebar-title').textContent = d.name || 'Unknown';
+  document.getElementById('sidebar-sub').textContent   = d.mmsi ? `MMSI: ${d.mmsi}` : '';
+  document.getElementById('sidebar-body').innerHTML = `
+    <div class="sb-section">
+      <div class="sb-section-title">IDENTITAS</div>
+      <div class="sb-row"><span class="sb-key">MMSI</span><span class="sb-val mono">${fmt(d.mmsi)}</span></div>
+      <div class="sb-row"><span class="sb-key">Tujuan</span><span class="sb-val">${fmt(d.destination)||'—'}</span></div>
+      <div class="sb-row"><span class="sb-key">Status Nav</span><span class="sb-val">${fmt(d.navStatus)}</span></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-title">POSISI & GERAK</div>
+      <div class="sb-row"><span class="sb-key">Lintang</span><span class="sb-val mono">${d.lat.toFixed(6)}°</span></div>
+      <div class="sb-row"><span class="sb-key">Bujur</span><span class="sb-val mono">${d.lon.toFixed(6)}°</span></div>
+      <div class="sb-row"><span class="sb-key">Kecepatan</span>
+        <span class="sb-val"><span style="background:${c}22;color:${c};border:1px solid ${c}33;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700">${fmt(d.speed)} kn</span></span>
+      </div>
+      <div class="sb-row"><span class="sb-key">Course</span><span class="sb-val mono">${fmt(d.course)}°</span></div>
+      <div class="sb-row"><span class="sb-key">Heading</span><span class="sb-val mono">${fmt(d.heading)}°</span></div>
+      <div class="sb-row"><span class="sb-key">Update</span><span class="sb-val dim" style="font-size:11px">${fmt(d.waktu)}</span></div>
+      <div class="sb-row"><span class="sb-key">Trail AIS</span><span class="sb-val">${(ships[sidebarKey]?.trail?.length||0)} titik</span></div>
+    </div>`;
+}
+
+function focusHistEvent(lat, lon) { map.setView([lat, lon], 10, { animate:true }); }
+
+// ── SIDEBAR TRACK HISTORY ─────────────────────────────────────────────────────
+function renderSidebarTrack(track) {
+  // Hapus section lama jika ada
+  const old = document.getElementById('sb-track-section');
+  if (old) old.remove();
+
+  if (!track.length) return;
+
+  // Urutkan ascending (terlama → terbaru) untuk tampilan kronologis
+  const sorted = [...track].sort((a, b) => {
+    if (!a.timestamp) return 1;
+    if (!b.timestamp) return -1;
+    return new Date(a.timestamp) - new Date(b.timestamp);
+  });
+
+  const rows = sorted.map((p, i) => {
+    const ts  = p.timestamp ? new Date(p.timestamp).toLocaleString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+    const spd = p.speed != null ? `${Number(p.speed).toFixed(1)} kn` : '—';
+    const c   = aisColor(p.speed != null ? Number(p.speed) : null);
+    const isFirst = i === 0;
+    const isLast  = i === sorted.length - 1;
+    const label   = isFirst ? 'Start' : isLast ? 'End' : null;
+    return `<div class="track-row" onclick="map.setView([${p.lat},${p.lon}],13,{animate:true})">
+      <div class="track-row-left">
+        <span class="track-dot" style="background:${isFirst?'#3fb950':isLast?'#f85149':c}"></span>
+        <div>
+          <div class="track-time">${ts}${label?` <span class="track-label">${label}</span>`:''}</div>
+          <div class="track-coord">${p.lat.toFixed(5)}°, ${p.lon.toFixed(5)}°</div>
+        </div>
+      </div>
+      <span class="track-speed" style="color:${c}">${spd}</span>
+    </div>`;
+  }).join('');
+
+  const section = document.createElement('div');
+  section.id = 'sb-track-section';
+  section.className = 'sb-section';
+  section.innerHTML = `
+    <div class="sb-section-title">
+      RIWAYAT POSISI
+      <span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">${sorted.length} titik</span>
+    </div>
+    <div class="track-list">${rows}</div>`;
+  document.getElementById('sidebar-body').appendChild(section);
+
+  // Scroll ke bawah agar section baru terlihat
+  const body = document.getElementById('sidebar-body');
+  setTimeout(() => body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' }), 80);
+}
+
+// ── MARKER VISIBILITY ─────────────────────────────────────────────────────────
+function hideOtherMarkers() {
+  for (const [k,s] of Object.entries(ships)) { if (k !== sidebarKey) map.removeLayer(s.marker); }
+  historyLayer.clearLayers();
+}
+function showAllMarkers() {
+  for (const s of Object.values(ships)) { if (!map.hasLayer(s.marker)) s.marker.addTo(map); }
+  if (sidebarKey && ships[sidebarKey]) showHistoryMarkers(ships[sidebarKey].data);
+}
+
+// ── TRAJECTORY ────────────────────────────────────────────────────────────────
+async function toggleTraj() {
+  if (!sidebarKey || !ships[sidebarKey]) return;
+  const btn  = document.getElementById('sb-traj-btn');
+  const info = document.getElementById('sb-traj-info');
+  const s    = ships[sidebarKey];
+
+  if (trajActive) {
+    sidebarTrajLayer.clearLayers(); trajActive = false;
+    showAllMarkers();
+    btn.className = 'sb-btn'; btn.textContent = 'Tampilkan Trajectory';
+    info.textContent = '';
+    const ts = document.getElementById('sb-track-section'); if (ts) ts.remove();
+    return;
+  }
+  if (s.data.source === 'ais') {
+    const trail = s.trail || [];
+    if (trail.length < 2) { info.textContent = 'Trail belum cukup (min 2 titik).'; return; }
+    hideOtherMarkers(); plotSidebarTrail(trail);
+    trajActive = true; btn.className = 'sb-btn traj-on'; btn.textContent = 'Sembunyikan Trajectory';
+    info.textContent = `Trail AIS · ${trail.length} titik`; return;
+  }
+  if (!s.data.vesselId) { info.textContent = 'vessel_id tidak tersedia.'; return; }
+  btn.className = 'sb-btn loading'; btn.textContent = 'Mengambil…'; info.textContent = '';
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const r = await fetch(`/api/gfw/track?vessel_id=${encodeURIComponent(s.data.vesselId)}&start_date=2012-01-01&end_date=${today}`);
+    const j = await r.json();
+    if (j.error) throw new Error(j.error);
+    const track = j.track || [];
+    if (track.length >= 2) {
+      hideOtherMarkers(); plotSidebarTrail(track.map(p=>[p.lat,p.lon]), track);
+      trajActive = true; btn.className = 'sb-btn traj-on'; btn.textContent = 'Sembunyikan Trajectory';
+      info.textContent = `${j.count} titik · ${j.source === 'events' ? 'dari event history' : 'raw track'}`;
+      renderSidebarTrack(track);
+    } else {
+      btn.className = 'sb-btn'; btn.textContent = 'Tampilkan Trajectory';
+      info.textContent = 'Tidak ada data trajectory.';
+    }
+  } catch {
+    btn.className = 'sb-btn'; btn.textContent = 'Tampilkan Trajectory';
+    info.textContent = 'Trajectory tidak tersedia.';
+  }
+}
+
+function plotSidebarTrail(latlngs, trackData = []) {
+  sidebarTrajLayer.clearLayers(); if (!latlngs.length) return;
+  if (latlngs.length >= 2)
+    L.polyline(latlngs, { color:'#f85149', weight:2, opacity:.85 }).addTo(sidebarTrajLayer);
+  L.circleMarker(latlngs[0], { radius:5, color:'#3fb950', fillColor:'#3fb950', fillOpacity:1 }).bindPopup('Start').addTo(sidebarTrajLayer);
+  L.circleMarker(latlngs[latlngs.length-1], { radius:5, color:'#f85149', fillColor:'#f85149', fillOpacity:1 }).bindPopup('End').addTo(sidebarTrajLayer);
+  const step = Math.max(1, Math.ceil(latlngs.length / 60));
+  latlngs.forEach((ll,i) => {
+    if (i%step!==0 || i===0 || i===latlngs.length-1) return;
+    const p = trackData[i]||{};
+    L.circleMarker(ll, { radius:2.5, color:'#d29922', fillColor:'#d29922', fillOpacity:.8 })
+      .bindPopup(`${p.timestamp||''}<br>Speed: ${p.speed??'—'} kn`).addTo(sidebarTrajLayer);
+  });
+  try { map.fitBounds(L.polyline(latlngs).getBounds(), { padding:[40,80] }); } catch {}
+}
+
+// ── TOOL PANEL ────────────────────────────────────────────────────────────────
+function togglePanel() {
+  const p = document.getElementById('tool-panel');
+  const show = p.style.display !== 'block';
+  p.style.display = show ? 'block' : 'none';
+  document.getElementById('btn-tools').classList.toggle('active', show);
+  if (show && !queryCatalogLoaded) loadQueryCatalog();
+}
+function switchTab(tab) {
+  document.getElementById('queries-view').style.display = tab==='queries'?'block':'none';
+  document.getElementById('track-view').style.display   = tab==='track'?'block':'none';
+  document.getElementById('tab-queries').classList.toggle('active', tab==='queries');
+  document.getElementById('tab-track').classList.toggle('active',   tab==='track');
+  if (tab==='queries' && !queryCatalogLoaded) loadQueryCatalog();
+}
+async function loadQueryCatalog() {
+  const list = document.getElementById('query-list');
+  list.textContent = 'Memuat…';
+  try {
+    const r = await fetch('/api/gfwr/queries');
+    const d = await r.json();
+    queryCatalogLoaded = true;
+    list.innerHTML = (d.queries||[]).map(q => `
+      <div class="query-item">
+        <div class="query-item-name">${esc(q.name)}</div>
+        <div class="query-item-meta">${esc(q.category)} · ${esc(q.endpoint)}<br>
+        Dataset: ${esc((q.datasets||[]).join(', ')||'—')}<br>
+        ${q.description ? esc(q.description) : ''}</div>
+      </div>`).join('');
+  } catch (err) { list.textContent = 'Gagal memuat: ' + err.message; }
+}
+function setDefaultDates() {
+  const end=new Date(), start=new Date(end);
+  start.setDate(start.getDate()-30);
+  document.getElementById('track-start').value = start.toISOString().slice(0,10);
+  document.getElementById('track-end').value   = end.toISOString().slice(0,10);
+}
+async function searchVessel() {
+  const q=document.getElementById('vessel-query').value.trim(), el=document.getElementById('vessel-results');
+  if (!q) return;
+  selectedVessel=null; document.getElementById('load-track').disabled=true;
+  el.innerHTML='<div style="color:var(--text-2);font-size:12px">Mencari…</div>';
+  try {
+    const r=await fetch(`/api/gfw/vessels/search?query=${encodeURIComponent(q)}&limit=8`);
+    const d=await r.json(); if (d.error) throw new Error(d.error);
+    if (!d.entries?.length) { el.innerHTML='<div style="color:var(--text-2);font-size:12px">Tidak ada hasil.</div>'; return; }
+    window.__vr=d.entries;
+    el.innerHTML=d.entries.map((v,i)=>`
+      <button class="vessel-item" onclick="selectVessel(${i})">
+        <div class="vessel-item-name">${esc(v.ship_name||'Unknown')}</div>
+        <div class="vessel-item-meta">MMSI: ${esc(v.mmsi||'—')} · IMO: ${esc(v.imo||'—')} · ${esc(v.flag||'—')}</div>
+      </button>`).join('');
+  } catch (err) { el.innerHTML=`<div style="color:var(--text-2);font-size:12px">${esc(err.message)}</div>`; }
+}
+function selectVessel(i) {
+  selectedVessel=(window.__vr||[])[i];
+  document.querySelectorAll('.vessel-item').forEach((el,j)=>el.classList.toggle('active',i===j));
+  document.getElementById('load-track').disabled=!selectedVessel?.vessel_id;
+  document.getElementById('track-summary').textContent=selectedVessel?.vessel_id?`Dipilih: ${selectedVessel.ship_name||'Unknown'}`:'vessel_id tidak tersedia';
+}
+async function loadTrack() {
+  if (!selectedVessel?.vessel_id) return;
+  const start=document.getElementById('track-start').value, end=document.getElementById('track-end').value;
+  const sum=document.getElementById('track-summary');
+  sum.textContent='Mengambil trajectory…';
+  try {
+    const r=await fetch(`/api/gfw/track?vessel_id=${encodeURIComponent(selectedVessel.vessel_id)}&start_date=${start}&end_date=${end}`);
+    const d=await r.json(); if (d.error) throw new Error(d.error);
+    plotTraj(d.track||[]);
+    sum.textContent=`${d.count} titik · ${d.source} · ${start} → ${end}`;
+  } catch (err) { sum.textContent='Error: '+err.message; }
+}
+function plotTraj(track) {
+  trajLayer.clearLayers(); if (!track.length) return;
+  const ll=track.map(p=>[p.lat,p.lon]);
+  const line=L.polyline(ll,{color:'#f85149',weight:2.5,opacity:.9}).addTo(trajLayer);
+  L.circleMarker(ll[0],{radius:5,color:'#3fb950',fillColor:'#3fb950',fillOpacity:1}).bindPopup('Start').addTo(trajLayer);
+  L.circleMarker(ll[ll.length-1],{radius:5,color:'#f85149',fillColor:'#f85149',fillOpacity:1}).bindPopup('End').addTo(trajLayer);
+  const step=Math.max(1,Math.ceil(track.length/80));
+  track.forEach((p,i)=>{ if(i%step!==0) return; L.circleMarker([p.lat,p.lon],{radius:2,color:'#d29922',fillColor:'#d29922',fillOpacity:.7}).bindPopup(`${p.timestamp||''}<br>Speed: ${p.speed??'—'} kn`).addTo(trajLayer); });
+  map.fitBounds(line.getBounds(),{padding:[30,30]});
+}
+function clearTraj() { trajLayer.clearLayers(); document.getElementById('track-summary').textContent=''; }
+
+// ── AIS KEY MODAL ─────────────────────────────────────────────────────────────
+function openKeyModal()  { document.getElementById('key-modal').classList.add('open'); document.getElementById('key-input').value=aisKey; }
+function closeKeyModal() { document.getElementById('key-modal').classList.remove('open'); }
+function saveKey() {
+  aisKey=document.getElementById('key-input').value.trim();
+  localStorage.setItem('ais_key',aisKey); closeKeyModal();
+  if (mode==='ais') { stopAis(); startAis(); } else setMode('ais');
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────────
+function esc(v) { return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Auto-prune AIS
+setInterval(()=>{
+  if (mode!=='ais') return;
+  const cut=Date.now()-10*60_000;
+  for (const [k,s] of Object.entries(ships)) { if (s.lastSeen<cut) { map.removeLayer(s.marker); delete ships[k]; } }
+  document.getElementById('ship-count').textContent=Object.keys(ships).length;
+},60_000);
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+setDefaultDates();
+setStatsMode('gfw');
+loadGfw();
+</script>
+</body>
+</html>
