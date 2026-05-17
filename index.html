@@ -27,6 +27,8 @@
       --yellow-dim:  rgba(210,153,34,.12);
       --red:         #f85149;
       --red-dim:     rgba(248,81,73,.12);
+      --purple:      #a371f7;
+      --purple-dim:  rgba(163,113,247,.12);
       --radius:      6px;
       --topbar-h:    48px;
     }
@@ -69,6 +71,11 @@
       content:''; position:absolute; bottom:0; left:18px; right:18px;
       height:2px; background:var(--blue); border-radius:1px 1px 0 0;
     }
+    .mode-btn.active-ai { color:var(--purple); }
+    .mode-btn.active-ai::after {
+      content:''; position:absolute; bottom:0; left:18px; right:18px;
+      height:2px; background:var(--purple); border-radius:1px 1px 0 0;
+    }
     .tb-status {
       padding:0 16px; display:flex; align-items:center; gap:8px;
       border-right:1px solid var(--border); height:100%;
@@ -98,15 +105,21 @@
     .tb-btn:first-child { border-left:none; }
     .tb-btn:hover { color:var(--text); background:var(--surface); }
     .tb-btn.active { color:var(--blue); }
-    #btn-refresh { display:none; }
 
     /* ── STATS PANEL (kiri bawah topbar) ─────────────────────────────────── */
     #stats-panel {
       position:fixed; top:calc(var(--topbar-h) + 12px); left:12px;
       width:200px; background:rgba(9,12,16,.94); border:1px solid var(--border);
       border-radius:var(--radius); z-index:800; backdrop-filter:blur(12px);
-      overflow:hidden;
+      overflow:hidden; transition:width .2s ease;
     }
+    #stats-panel.ai-mode {
+      width:300px;
+      max-height:calc(100vh - var(--topbar-h) - 24px);
+      overflow-y:auto;
+    }
+    #stats-panel.ai-mode::-webkit-scrollbar { width:4px; }
+    #stats-panel.ai-mode::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:2px; }
     .stats-header {
       padding:10px 12px 8px; border-bottom:1px solid var(--border);
       font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
@@ -146,7 +159,18 @@
     .leg-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
     .leg-label { color:var(--text-2); }
 
-    /* ── LOADING ──────────────────────────────────────────────────────────── */
+    /* ── TOPBAR LOADING BAR ───────────────────────────────────────────────── */
+    #topbar-progress {
+      position:fixed; top:var(--topbar-h); left:0; right:0; height:2px;
+      z-index:901; pointer-events:none; display:none;
+    }
+    #topbar-progress-fill {
+      height:100%; background:var(--green);
+      transition:width .4s ease;
+      box-shadow:0 0 8px var(--green);
+    }
+
+    /* ── LOADING OVERLAY (fallback) ───────────────────────────────────────── */
     #loading {
       position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
       background:rgba(9,12,16,.96); border:1px solid var(--border);
@@ -163,6 +187,26 @@
     }
     @keyframes slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(350%)} }
     #loading-label { font-size:13px; color:var(--text-2); }
+
+    /* ── DATASET LOADING BADGES ───────────────────────────────────────────── */
+    .ds-badges {
+      display:flex; gap:4px; flex-wrap:wrap;
+      padding:6px 12px; border-top:1px solid var(--border);
+    }
+    .ds-badge {
+      font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+      padding:2px 7px; border-radius:999px; border:1px solid var(--border-2);
+      color:var(--text-3); background:var(--surface-3);
+      display:flex; align-items:center; gap:4px; transition:.2s;
+    }
+    .ds-badge.loading { color:var(--yellow); border-color:rgba(210,153,34,.3); background:var(--yellow-dim); }
+    .ds-badge.done    { color:var(--green);  border-color:rgba(63,185,80,.3);  background:var(--green-dim); }
+    .ds-badge.err     { color:var(--red);    border-color:rgba(248,81,73,.3);  background:var(--red-dim); }
+    .ds-spin {
+      width:8px; height:8px; border:1.5px solid currentColor;
+      border-top-color:transparent; border-radius:50%;
+      animation:spin .6s linear infinite; flex-shrink:0;
+    }
 
     /* ── DETAIL PANEL (kanan) ─────────────────────────────────────────────── */
     #sidebar {
@@ -322,29 +366,62 @@
     .vessel-item-meta { font-size:11px; color:var(--text-2); }
     #track-summary { margin-top:8px; font-size:11px; color:var(--text-2); line-height:1.6; }
 
-    /* ── AIS KEY MODAL ────────────────────────────────────────────────────── */
-    #key-modal {
-      position:fixed; inset:0; background:rgba(0,0,0,.65);
-      z-index:3000; display:none; align-items:center; justify-content:center;
+    /* ── AI INFERENCE PANEL ──────────────────────────────────────────────── */
+    #ai-panel {
+      position:fixed; top:calc(var(--topbar-h) + 8px); right:8px;
+      width:min(380px, calc(100vw - 16px)); max-height:calc(100vh - var(--topbar-h) - 16px);
+      overflow:auto; background:rgba(9,12,16,.97); border:1px solid var(--border);
+      border-radius:var(--radius); z-index:1000; display:none;
     }
-    #key-modal.open { display:flex; }
-    #key-box {
-      background:var(--surface); border:1px solid var(--border-2);
-      border-radius:var(--radius); padding:24px;
-      width:min(400px, calc(100vw - 32px));
+    #ai-panel::-webkit-scrollbar { width:4px; }
+    #ai-panel::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:2px; }
+    .ai-panel-header {
+      display:flex; align-items:center; padding:10px 14px;
+      border-bottom:1px solid var(--border); flex-shrink:0;
     }
-    #key-box h3 { font-size:14px; font-weight:700; margin-bottom:6px; }
-    #key-box p  { font-size:12px; color:var(--text-2); margin-bottom:14px; line-height:1.6; }
-    #key-input  {
-      width:100%; background:var(--bg); border:1px solid var(--border-2);
-      color:var(--text); border-radius:var(--radius); padding:9px 11px;
-      font-size:12px; font-family:monospace; margin-bottom:14px;
+    .ai-panel-title {
+      font-size:11px; font-weight:700; letter-spacing:.06em;
+      text-transform:uppercase; color:var(--purple);
     }
-    #key-input:focus { outline:none; border-color:var(--blue); }
-    .key-actions { display:flex; gap:8px; justify-content:flex-end; }
-    .key-btn { padding:8px 18px; border-radius:var(--radius); border:1px solid var(--border-2); cursor:pointer; font-size:12px; font-weight:600; }
-    .key-btn.primary   { border-color:var(--blue); color:var(--blue); background:var(--blue-dim); }
-    .key-btn.secondary { background:none; color:var(--text-2); }
+    .ai-panel-close {
+      margin-left:auto; background:none; border:none; color:var(--text-3);
+      cursor:pointer; font-size:15px; padding:2px 4px; border-radius:4px; line-height:1;
+    }
+    .ai-panel-close:hover { color:var(--text); background:var(--surface-3); }
+    .ai-vessel-card {
+      border:1px solid var(--border); border-radius:var(--radius);
+      padding:10px; background:var(--surface-2); cursor:pointer;
+      transition:border-color .15s; margin-bottom:6px;
+    }
+    .ai-vessel-card:hover { border-color:var(--purple); }
+    .ai-vessel-name { font-size:12px; font-weight:700; color:var(--text); margin-bottom:2px; }
+    .ai-vessel-mmsi { font-size:10px; color:var(--text-3); margin-bottom:6px; font-variant-numeric:tabular-nums; }
+    .ai-task-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; }
+    .ai-task-label { font-size:11px; color:var(--text-2); }
+    .ai-task-pred  { font-size:11px; font-weight:700; }
+    .ai-badge { display:inline-block; padding:1px 6px; border-radius:3px; font-size:10px; font-weight:700; }
+    .ai-conf-bar  { height:3px; border-radius:2px; background:var(--surface-3); overflow:hidden; margin-top:2px; margin-bottom:4px; }
+    .ai-conf-fill { height:100%; border-radius:2px; }
+    .ai-alert-bar {
+      margin-top:6px; padding:4px 8px; border-radius:4px; font-size:11px;
+      font-weight:700; display:flex; align-items:center; gap:6px;
+    }
+
+
+    /* ── AI MAP TOOLTIP ──────────────────────────────────────────────────── */
+    .ai-map-tip {
+      background:rgba(9,12,16,.92) !important;
+      border:1px solid var(--border-2) !important;
+      border-radius:5px !important;
+      color:var(--text) !important;
+      font-size:10px !important;
+      padding:5px 8px !important;
+      white-space:nowrap !important;
+      box-shadow:0 2px 10px rgba(0,0,0,.5) !important;
+      pointer-events:none !important;
+    }
+    .ai-map-tip.leaflet-tooltip-bottom::before,
+    .ai-map-tip.leaflet-tooltip-top::before { border-bottom-color:var(--border-2) !important; border-top-color:var(--border-2) !important; }
 
     /* ── POPUP LEAFLET ────────────────────────────────────────────────────── */
     .leaflet-container { background:var(--bg); }
@@ -375,6 +452,7 @@
   <div class="tb-modes">
     <button class="mode-btn active-gfw" id="btn-gfw" onclick="setMode('gfw')">GFW Events</button>
     <button class="mode-btn" id="btn-ais" onclick="setMode('ais')">AIS Live</button>
+    <button class="mode-btn" id="btn-ai" onclick="setMode('ai')">AI Inference</button>
   </div>
   <div class="tb-status">
     <span id="dot"></span>
@@ -393,16 +471,22 @@
   </div>
   <div class="tb-actions">
     <button class="tb-btn" id="btn-tools" onclick="togglePanel()">Query & Track</button>
-    <button class="tb-btn" id="btn-refresh" onclick="refreshGfw()">Perbarui</button>
-    <button class="tb-btn" id="btn-aiskey" onclick="openKeyModal()">Set AIS Key</button>
   </div>
 </header>
+
+<!-- TOPBAR PROGRESS BAR -->
+<div id="topbar-progress"><div id="topbar-progress-fill" style="width:0%"></div></div>
 
 <!-- STATS PANEL -->
 <div id="stats-panel">
   <div class="stats-header">
     <span id="stats-mode-label">GFW EVENTS</span>
     <span class="stats-date" id="stats-range">—</span>
+  </div>
+  <div id="ds-badges-row" class="ds-badges" style="display:none">
+    <span class="ds-badge" id="badge-fishing"><span class="ds-spin"></span>Fishing</span>
+    <span class="ds-badge" id="badge-encounter"><span class="ds-spin"></span>Encounter</span>
+    <span class="ds-badge" id="badge-loitering"><span class="ds-spin"></span>Loitering</span>
   </div>
   <div class="stats-body" id="stats-body">
     <div class="stat-row">
@@ -426,7 +510,7 @@
       <span class="stat-val" id="cnt-other">0</span>
     </div>
   </div>
-  <div class="stats-footer">
+  <div class="stats-footer" id="stats-footer">
     <span class="stats-total-label">Total events</span>
     <span class="stats-total-val" id="stats-total">0</span>
   </div>
@@ -446,18 +530,6 @@
   <div id="loading-label">Mengambil data GFW…</div>
 </div>
 
-<!-- AIS KEY MODAL -->
-<div id="key-modal">
-  <div id="key-box">
-    <h3>AISStream API Key</h3>
-    <p>Diperlukan untuk mode AIS Live. API key gratis tersedia di <a href="https://aisstream.io" target="_blank" style="color:var(--blue)">aisstream.io</a>.</p>
-    <input id="key-input" type="password" placeholder="Masukkan API key…" />
-    <div class="key-actions">
-      <button class="key-btn secondary" onclick="closeKeyModal()">Batal</button>
-      <button class="key-btn primary" onclick="saveKey()">Simpan & Aktifkan</button>
-    </div>
-  </div>
-</div>
 
 <!-- TOOL PANEL -->
 <div id="tool-panel">
@@ -487,6 +559,41 @@
       </div>
       <div id="track-summary"></div>
     </div>
+  </div>
+</div>
+
+<!-- AI INFERENCE PANEL -->
+<div id="ai-panel">
+  <div class="ai-panel-header">
+    <span class="ai-panel-title">AI Inference</span>
+    <button class="ai-panel-close" onclick="document.getElementById('ai-panel').style.display='none'" title="Tutup">✕</button>
+  </div>
+  <div class="panel-body">
+    <span class="p-label">Rentang Tanggal</span>
+    <div class="p-row">
+      <input type="date" class="p-input" id="ai-start" />
+      <input type="date" class="p-input" id="ai-end" />
+    </div>
+    <span class="p-label">Parameter</span>
+    <div class="p-row">
+      <select class="p-input" id="ai-max-vessels" style="flex:1">
+        <option value="3">3 kapal</option>
+        <option value="5" selected>5 kapal</option>
+        <option value="10">10 kapal</option>
+        <option value="20">20 kapal</option>
+      </select>
+      <select class="p-input" id="ai-task" style="flex:1">
+        <option value="all">Semua Model</option>
+        <option value="gear">Gear Type</option>
+        <option value="spoofing">Spoofing</option>
+        <option value="godark">Go Dark</option>
+      </select>
+    </div>
+    <div class="p-row">
+      <button class="p-btn primary" id="ai-run-btn" onclick="runInference()" style="flex:1">Jalankan Inference</button>
+    </div>
+    <div id="ai-status" style="font-size:11px;color:var(--text-3);margin-bottom:8px;min-height:16px"></div>
+    <div id="ai-results"></div>
   </div>
 </div>
 
@@ -525,14 +632,15 @@ const historyLayer     = L.layerGroup().addTo(map);
 
 let mode               = 'gfw';
 let msgCount           = 0;
-let aisKey             = localStorage.getItem('ais_key') || '';
+let aisKey             = localStorage.getItem('ais_key') || 'cadc1da33463ea00ff85c0c1d8506ce3b8a57fcd';
+if (!localStorage.getItem('ais_key')) localStorage.setItem('ais_key', aisKey);
 let aisWs              = null;
 let sidebarKey         = null;
 let trajActive         = false;
 let queryCatalogLoaded = false;
 let selectedVessel     = null;
 
-const GFW_CACHE_KEY = 'gfw-events-cache-v2';
+const GFW_CACHE_KEY = 'gfw-events-cache-v7';
 const GFW_CACHE_TTL = 10 * 60 * 1000;
 const AIS_TRAIL_MAX = 120;
 const AIS_BBOXES    = [
@@ -591,6 +699,25 @@ function setLoading(show, label) {
   document.getElementById('loading').style.display = show ? 'block' : 'none';
   if (label) document.getElementById('loading-label').textContent = label;
 }
+function setProgress(pct, color) {
+  const bar  = document.getElementById('topbar-progress');
+  const fill = document.getElementById('topbar-progress-fill');
+  if (pct < 0) { bar.style.display = 'none'; fill.style.width = '0%'; }
+  else {
+    bar.style.display = 'block';
+    fill.style.width = pct + '%';
+    if (color) { fill.style.background = color; fill.style.boxShadow = `0 0 8px ${color}`; }
+  }
+}
+function setBadge(type, state, count) {
+  const el = document.getElementById('badge-' + type); if (!el) return;
+  const spin  = state === 'loading' ? '<span class="ds-spin"></span>' : '';
+  const prefix = state === 'done' ? '✓ ' : state === 'err' ? '✗ ' : '';
+  const label  = type.charAt(0).toUpperCase() + type.slice(1);
+  const num    = count != null ? ` ${count}` : '';
+  el.className = 'ds-badge ' + state;
+  el.innerHTML = spin + prefix + label + num;
+}
 
 // ── STATS ─────────────────────────────────────────────────────────────────────
 function updateStats() {
@@ -615,21 +742,65 @@ function updateStats() {
 }
 
 function setStatsMode(m) {
-  const panel = document.getElementById('stats-panel');
-  const body  = document.getElementById('stats-body');
-  document.getElementById('stats-mode-label').textContent = m === 'gfw' ? 'GFW EVENTS' : 'AIS LIVE';
+  const statsPanel = document.getElementById('stats-panel');
+  const body       = document.getElementById('stats-body');
+  document.getElementById('stats-mode-label').textContent = m === 'gfw' ? 'GFW EVENTS' : m === 'ai' ? 'AI INFERENCE' : 'AIS LIVE';
+  if (m === 'ai') {
+    statsPanel.classList.add('ai-mode');
+    body.innerHTML = `
+      <div style="padding:8px 10px 2px">
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <div style="flex:1;background:var(--surface-3);border-radius:4px;padding:5px 8px">
+            <div style="font-size:9px;color:var(--text-3);font-weight:700;letter-spacing:.06em;text-transform:uppercase">GFW</div>
+            <div style="font-size:16px;font-weight:700;color:var(--green)" id="ai-cnt-gfw">—</div>
+          </div>
+          <div style="flex:1;background:var(--surface-3);border-radius:4px;padding:5px 8px">
+            <div style="font-size:9px;color:var(--text-3);font-weight:700;letter-spacing:.06em;text-transform:uppercase">AIS</div>
+            <div style="font-size:16px;font-weight:700;color:var(--blue)" id="ai-cnt-ais">—</div>
+          </div>
+        </div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px">Rentang Tanggal (GFW)</div>
+        <div style="display:flex;gap:5px;margin-bottom:6px">
+          <input type="date" class="p-input" id="ai-start" style="font-size:11px;padding:5px 7px;flex:1;min-width:0" />
+          <input type="date" class="p-input" id="ai-end"   style="font-size:11px;padding:5px 7px;flex:1;min-width:0" />
+        </div>
+        <div style="display:flex;gap:5px;margin-bottom:6px">
+          <select class="p-input" id="ai-max-vessels" style="flex:1;min-width:0;font-size:11px;padding:5px 6px">
+            <option value="3">3 kapal</option>
+            <option value="5" selected>5 kapal</option>
+            <option value="10">10 kapal</option>
+            <option value="20">20 kapal</option>
+          </select>
+          <select class="p-input" id="ai-task" style="flex:1;min-width:0;font-size:11px;padding:5px 6px">
+            <option value="all">Semua Model</option>
+            <option value="gear">Gear Type</option>
+            <option value="spoofing">Spoofing</option>
+            <option value="godark">Go Dark</option>
+          </select>
+        </div>
+        <button class="p-btn primary" id="ai-run-btn" onclick="runInference()"
+          style="width:100%;font-size:11px;padding:7px 10px;border-radius:var(--radius)">Jalankan Inference</button>
+        <div id="ai-status" style="font-size:10px;color:var(--text-3);margin-top:6px;min-height:14px;line-height:1.4;word-break:break-word"></div>
+      </div>
+      <div id="ai-results" style="padding:0 8px 8px"></div>`;
+    document.getElementById('stats-footer').style.display = 'none';
+    setAiDefaultDates();
+  } else {
+    statsPanel.classList.remove('ai-mode');
+  }
   if (m === 'ais') {
     body.innerHTML = `
       <div class="ais-stat-row"><span class="ais-stat-label">Kapal Aktif</span><span class="ais-stat-val" id="ais-ship-val">0</span></div>
       <div class="ais-stat-row"><span class="ais-stat-label">Pesan Diterima</span><span class="ais-stat-val" id="ais-msg-val">0</span></div>`;
-  } else {
+    document.getElementById('stats-footer').style.display = 'none';
+  } else if (m === 'gfw') {
     body.innerHTML = `
       <div class="stat-row"><span class="stat-type">Fishing</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-fishing" style="background:var(--green);width:0%"></div></div><span class="stat-val" id="cnt-fishing">0</span></div>
       <div class="stat-row"><span class="stat-type">Encounter</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-encounter" style="background:var(--orange);width:0%"></div></div><span class="stat-val" id="cnt-encounter">0</span></div>
       <div class="stat-row"><span class="stat-type">Loitering</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-loitering" style="background:var(--yellow);width:0%"></div></div><span class="stat-val" id="cnt-loitering">0</span></div>
       <div class="stat-row"><span class="stat-type">Lainnya</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-other" style="background:var(--text-3);width:0%"></div></div><span class="stat-val" id="cnt-other">0</span></div>`;
+    document.getElementById('stats-footer').style.display = 'flex';
   }
-  document.getElementById('stats-footer').style.display = m === 'gfw' ? 'flex' : 'none';
 }
 
 // ── MODE SWITCH ───────────────────────────────────────────────────────────────
@@ -640,10 +811,11 @@ function setMode(m) {
   closeSidebar();
   trajLayer.clearLayers(); sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
   gfwEvents = [];
+  aiLayer.clearLayers(); aiResults = [];
 
   document.getElementById('btn-gfw').className = 'mode-btn' + (m === 'gfw' ? ' active-gfw' : '');
   document.getElementById('btn-ais').className = 'mode-btn' + (m === 'ais' ? ' active-ais' : '');
-  document.getElementById('btn-refresh').style.display = m === 'gfw' ? 'block' : 'none';
+  document.getElementById('btn-ai').className  = 'mode-btn' + (m === 'ai'  ? ' active-ai'  : '');
   document.getElementById('stats-range').textContent = '—';
   setStatsMode(m);
   updateLegend(m);
@@ -651,7 +823,13 @@ function setMode(m) {
 
   if (m === 'ais') {
     stopAis();
-    if (!aisKey) { openKeyModal(); return; }
+    startAis();
+  } else if (m === 'ai') {
+    const gfwEl = document.getElementById('ai-cnt-gfw');
+    const aisEl = document.getElementById('ai-cnt-ais');
+    if (gfwEl) gfwEl.textContent = '…';
+    if (aisEl) aisEl.textContent = '…';
+    loadGfw(true);
     startAis();
   } else {
     stopAis();
@@ -661,7 +839,16 @@ function setMode(m) {
 
 function updateLegend(m) {
   const el = document.getElementById('legend');
-  if (m === 'ais') {
+  if (m === 'ai') {
+    el.innerHTML = `
+      <span class="leg-title">Gear Type (AI)</span>
+      <div class="leg-row"><span class="leg-dot" style="background:#4493f8"></span><span class="leg-label">Drifting Longline</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#d29922"></span><span class="leg-label">Set Longline</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#a371f7"></span><span class="leg-label">Gillnet</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#e3901a"></span><span class="leg-label">Trawler</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#3fb950"></span><span class="leg-label">Troller / Fishing</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#f85149;border:2px solid #f85149"></span><span class="leg-label">⚠ Spoofing / Go Dark</span></div>`;
+  } else if (m === 'ais') {
     el.innerHTML = `
       <span class="leg-title">Kecepatan</span>
       <div class="leg-row"><span class="leg-dot" style="background:#f85149"></span><span class="leg-label">Berhenti &lt;1 kn</span></div>
@@ -680,11 +867,14 @@ function updateLegend(m) {
 // ── AIS ───────────────────────────────────────────────────────────────────────
 function startAis() {
   if (!aisKey) return;
-  setStatus(false, 'Menghubungkan…');
+  setStatus(false, 'Menghubungkan AIS…');
+  setProgress(15, 'var(--blue)');
   aisWs = new WebSocket('wss://stream.aisstream.io/v0/stream');
   aisWs.onopen = () => {
     aisWs.send(JSON.stringify({ APIKey:aisKey, BoundingBoxes:AIS_BBOXES, FilterMessageTypes:['PositionReport','ShipStaticData'] }));
     setStatus(true, 'AIS Online');
+    setProgress(100, 'var(--blue)');
+    setTimeout(() => setProgress(-1), 600);
   };
   aisWs.onmessage = e => {
     try { const p = parseAis(JSON.parse(e.data)); if (p) processMarker(p); } catch {}
@@ -692,6 +882,7 @@ function startAis() {
   aisWs.onclose = () => {
     setStatus(false, 'AIS Terputus');
     if (mode === 'ais') setTimeout(startAis, 5000);
+    else if (mode === 'ai' && document.getElementById('ai-src-ais')?.checked) setTimeout(startAis, 5000);
   };
   aisWs.onerror = () => aisWs.close();
 }
@@ -710,13 +901,24 @@ function parseAis(msg) {
 
 // ── GFW ───────────────────────────────────────────────────────────────────────
 function gfwDateRange() {
-  const end = new Date(), start = new Date(end);
+  const end = new Date();
+  const start = new Date(end);
   start.setDate(start.getDate() - 30);
   return { start:start.toISOString().slice(0,10), end:end.toISOString().slice(0,10) };
 }
 
+function clearGfwMarkers() {
+  for (const [k, s] of Object.entries(ships)) {
+    if (s.data.source === 'gfw') { map.removeLayer(s.marker); delete ships[k]; }
+  }
+  gfwEvents = [];
+}
+
 async function loadGfw(forceRefresh) {
-  if (!forceRefresh) {
+  const isAiMode = mode === 'ai';
+
+  // Cache hanya dipakai di GFW mode (bukan AI mode)
+  if (!forceRefresh && !isAiMode) {
     try {
       const raw = localStorage.getItem(GFW_CACHE_KEY);
       if (raw) {
@@ -727,40 +929,91 @@ async function loadGfw(forceRefresh) {
           setStatus(true, `GFW · ${c.events.length} events`);
           updateStats();
           if (c.range) document.getElementById('stats-range').textContent = c.range;
-          document.getElementById('btn-refresh').style.display = 'block';
           return;
         }
       }
     } catch {}
   }
-  clearAllMarkers(); gfwEvents = [];
-  setLoading(true, 'Mengambil data GFW 30 hari terakhir…');
-  setStatus(false, 'Memuat…');
+
+  // Hapus hanya marker GFW (bukan AIS) saat di AI mode
+  if (isAiMode) {
+    clearGfwMarkers();
+    updateAiCounters();
+  } else {
+    clearAllMarkers(); gfwEvents = [];
+  }
+
+  const { start, end } = gfwDateRange();
+  const rangeStr = `${fmtDateShort(start)} – ${fmtDateShort(end)}`;
+  if (!isAiMode) {
+    setStatus(false, 'Memuat GFW…');
+    document.getElementById('stats-range').textContent = rangeStr;
+  }
+
+  // Animasikan progress bar selama nunggu GFW API (~60-90 detik normal)
+  const badgeRow = document.getElementById('ds-badges-row');
+  if (badgeRow) {
+    badgeRow.style.display = 'flex';
+    setBadge('fishing', 'loading');
+    setBadge('encounter', 'loading');
+    setBadge('loitering', 'loading');
+  }
+  setProgress(5, 'var(--green)');
+  // Crawl progress slowly while waiting for the slow GFW API
+  let fakePct = 5;
+  const progressTimer = setInterval(() => {
+    fakePct = Math.min(fakePct + 1, 90);
+    setProgress(fakePct, 'var(--green)');
+  }, 900);
+
   try {
-    const { start, end } = gfwDateRange();
     const r = await fetch(`/api/gfw/events?start_date=${start}&end_date=${end}`);
     const j = await r.json();
-    const evs = (j.events||[]).map(normalizeGfw).filter(Boolean);
-    gfwEvents = evs;
+    if (!r.ok || j.error) console.warn('[gfw] server error:', j.error || j);
+    const evs = (j.events || []).map(normalizeGfw).filter(Boolean);
+    gfwEvents = isAiMode ? [...gfwEvents.filter(e=>e.source!=='gfw'), ...evs] : evs;
     evs.forEach(ev => processMarker(ev));
-    const rangeStr = `${fmtDateShort(start)} – ${fmtDateShort(end)}`;
-    document.getElementById('stats-range').textContent = rangeStr;
-    setStatus(true, `GFW · ${evs.length} events`);
-    updateStats();
-    try { localStorage.setItem(GFW_CACHE_KEY, JSON.stringify({ t:Date.now(), events:evs, range:rangeStr })); } catch {}
-  } catch (err) { setStatus(false, 'Gagal: ' + err.message); }
-  finally { setLoading(false); document.getElementById('btn-refresh').style.display = 'block'; }
+
+    clearInterval(progressTimer);
+    setProgress(100);
+    setTimeout(() => {
+      setProgress(-1);
+      if (badgeRow) {
+        setBadge('fishing',   'done', evs.filter(e=>(e.type||'').toUpperCase()==='FISHING').length);
+        setBadge('encounter', 'done', evs.filter(e=>(e.type||'').toUpperCase()==='ENCOUNTER').length);
+        setBadge('loitering', 'done', evs.filter(e=>(e.type||'').toUpperCase()==='LOITERING').length);
+        setTimeout(() => { badgeRow.style.display = 'none'; }, 2000);
+      }
+    }, 600);
+
+    if (!isAiMode) {
+      setStatus(true, `GFW · ${evs.length} events`);
+      updateStats();
+      document.getElementById('stats-range').textContent = rangeStr;
+      try { localStorage.setItem(GFW_CACHE_KEY, JSON.stringify({ t:Date.now(), events:evs, range:rangeStr })); } catch {}
+    } else {
+      setStatus(true, `GFW ${evs.length} + AIS live`);
+      updateAiCounters();
+    }
+  } catch (err) {
+    clearInterval(progressTimer);
+    setProgress(-1);
+    if (badgeRow) { setBadge('fishing','err'); setBadge('encounter','err'); setBadge('loitering','err'); }
+    console.error('[gfw] fetch error:', err);
+    if (!isAiMode) setStatus(false, 'GFW gagal: ' + err.message);
+  }
 }
 
-function refreshGfw() {
-  localStorage.removeItem(GFW_CACHE_KEY);
-  closeSidebar(); trajLayer.clearLayers(); sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
-  loadGfw(true);
-}
 
 function normalizeGfw(ev) {
-  if (!Number.isFinite(ev.lat) || !Number.isFinite(ev.lon)) return null;
-  return { source:'gfw', key:ev.id, id:ev.id, type:ev.type, lat:ev.lat, lon:ev.lon, mmsi:ev.mmsi, name:ev.shipName||'Unknown', flag:ev.flag, vesselId:ev.vesselId, start:ev.start, end:ev.end, durationHours:ev.durationHours };
+  const lat = ev.position?.lat, lon = ev.position?.lon;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  const durationHours = (ev.start && ev.end)
+    ? (new Date(ev.end) - new Date(ev.start)) / 3_600_000 : null;
+  return { source:'gfw', key:ev.id, id:ev.id, type:ev.type, lat, lon,
+    mmsi:ev.vessel?.ssvid, name:ev.vessel?.name||'Unknown',
+    flag:ev.vessel?.flag, vesselId:ev.vessel?.id,
+    start:ev.start, end:ev.end, durationHours };
 }
 
 // ── MARKERS ───────────────────────────────────────────────────────────────────
@@ -771,12 +1024,12 @@ function processMarker(d) {
     ships[d.key].marker.setLatLng([d.lat,d.lon]).setIcon(icon);
     ships[d.key].data = { ...ships[d.key].data, ...d };
     ships[d.key].lastSeen = Date.now();
-    if (d.source === 'ais') { ships[d.key].trail.push([d.lat,d.lon]); if (ships[d.key].trail.length > AIS_TRAIL_MAX) ships[d.key].trail.shift(); }
+    if (d.source === 'ais') { ships[d.key].trail.push({lat:d.lat,lon:d.lon,t:Date.now()}); if (ships[d.key].trail.length > AIS_TRAIL_MAX) ships[d.key].trail.shift(); }
     if (sidebarKey === d.key) renderSidebarBody(ships[d.key].data);
   } else {
     const marker = L.marker([d.lat,d.lon], { icon }).addTo(map);
     marker.on('click', () => d.source === 'gfw' ? openGfwDetail(d.key) : openSidebar(d.key));
-    ships[d.key] = { marker, data:d, lastSeen:Date.now(), trail:d.source==='ais'?[[d.lat,d.lon]]:[] };
+    ships[d.key] = { marker, data:d, lastSeen:Date.now(), trail:d.source==='ais'?[{lat:d.lat,lon:d.lon,t:Date.now()}]:[] };
   }
   if (d.source === 'ais') {
     msgCount++;
@@ -784,6 +1037,7 @@ function processMarker(d) {
     document.getElementById('last-update').textContent = new Date().toLocaleTimeString('id-ID');
     const sv = document.getElementById('ais-ship-val'); if (sv) sv.textContent = Object.keys(ships).length;
     const mv = document.getElementById('ais-msg-val');  if (mv) mv.textContent = msgCount;
+    updateAiCounters();
   }
   document.getElementById('ship-count').textContent = Object.keys(ships).length;
 }
@@ -1174,13 +1428,6 @@ function plotTraj(track) {
 function clearTraj() { trajLayer.clearLayers(); document.getElementById('track-summary').textContent=''; }
 
 // ── AIS KEY MODAL ─────────────────────────────────────────────────────────────
-function openKeyModal()  { document.getElementById('key-modal').classList.add('open'); document.getElementById('key-input').value=aisKey; }
-function closeKeyModal() { document.getElementById('key-modal').classList.remove('open'); }
-function saveKey() {
-  aisKey=document.getElementById('key-input').value.trim();
-  localStorage.setItem('ais_key',aisKey); closeKeyModal();
-  if (mode==='ais') { stopAis(); startAis(); } else setMode('ais');
-}
 
 // ── UTILS ──────────────────────────────────────────────────────────────────────
 function esc(v) { return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -1193,10 +1440,267 @@ setInterval(()=>{
   document.getElementById('ship-count').textContent=Object.keys(ships).length;
 },60_000);
 
+// ── AI INFERENCE ──────────────────────────────────────────────────────────────
+let aiResults = [];
+const aiLayer = L.layerGroup().addTo(map);
+
+function gearShortLabel(label) {
+  const m = {
+    'drifting_longlines': 'Drift Longline',
+    'set_longlines':      'Set Longline',
+    'set_gillnets':       'Gillnet',
+    'trawlers':           'Trawler',
+    'trollers':           'Troller',
+    'purse_seines':       'Purse Seine',
+    'pots_and_traps':     'Pots & Traps',
+    'squid_jig':          'Squid Jig',
+    'other_fishing':      'Other Fishing',
+    'fishing':            'Fishing',
+  };
+  return m[(label||'').toLowerCase()] || (label || '?');
+}
+
+function gearColor(label) {
+  const m = {
+    'drifting_longlines': '#4493f8',
+    'set_longlines':      '#d29922',
+    'set_gillnets':       '#a371f7',
+    'trawlers':           '#e3901a',
+    'trollers':           '#3fb950',
+    'purse_seines':       '#39c5cf',
+    'pots_and_traps':     '#f85149',
+    'squid_jig':          '#f7c948',
+    'other_fishing':      '#8b949e',
+    'fishing':            '#3fb950',
+  };
+  return m[(label||'').toLowerCase()] || '#8b949e';
+}
+function spoofColor(label) { return (label||'').toLowerCase().includes('spoof') ? '#f85149' : '#3fb950'; }
+function darkColor(label)  { return (label||'').toLowerCase().includes('dark')  ? '#e3901a' : '#3fb950'; }
+
+function makeAiIcon(vessel, selected) {
+  const gear  = vessel.tasks?.gear;
+  const spoof = vessel.tasks?.spoofing;
+  const dark  = vessel.tasks?.godark;
+  const alert = (spoof?.pred_label||'').toLowerCase().includes('spoof') ||
+                (dark?.pred_label||'').toLowerCase().includes('dark');
+  const c  = gear ? gearColor(gear.pred_label) : '#8b949e';
+  const sz = selected ? 18 : 13;
+  const ring = alert
+    ? `border:2px solid #f85149;box-shadow:0 0 8px #f8514988;`
+    : `border:2px solid #090c10;`;
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${c};${ring}transition:.12s"></div>`,
+    iconSize:[sz,sz], iconAnchor:[sz/2,sz/2],
+  });
+}
+
+let _aiCounterTimer = null;
+function updateAiCounters() {
+  if (mode !== 'ai') return;
+  if (_aiCounterTimer) return;
+  _aiCounterTimer = setTimeout(() => {
+    _aiCounterTimer = null;
+    const gfwEl = document.getElementById('ai-cnt-gfw');
+    const aisEl = document.getElementById('ai-cnt-ais');
+    if (gfwEl) gfwEl.textContent = gfwEvents.length || '0';
+    if (aisEl) {
+      const n = Object.values(ships).filter(s => s.data.source === 'ais').length;
+      aisEl.textContent = n || '0';
+    }
+  }, 500);
+}
+
+
+function setAiDefaultDates() {
+  const end   = new Date();
+  const start = new Date(end);
+  start.setDate(start.getDate() - 30);
+  const s = document.getElementById('ai-start'); if (s) s.value = start.toISOString().slice(0,10);
+  const e = document.getElementById('ai-end');   if (e) e.value = end.toISOString().slice(0,10);
+}
+
+async function checkInferenceServer() {
+  try {
+    const r = await fetch('http://localhost:8765/health', { signal: AbortSignal.timeout(3000) });
+    return r.ok;
+  } catch { return false; }
+}
+
+async function runInference() {
+  const task  = document.getElementById('ai-task').value;
+  const maxV  = parseInt(document.getElementById('ai-max-vessels').value);
+  const startDate = document.getElementById('ai-start')?.value || '';
+  const endDate   = document.getElementById('ai-end')?.value   || '';
+  const statusEl  = document.getElementById('ai-status');
+  const resultsEl = document.getElementById('ai-results');
+  const btn       = document.getElementById('ai-run-btn');
+
+  btn.disabled = true;
+  resultsEl.innerHTML = '';
+  aiLayer.clearLayers();
+  aiResults = [];
+
+  // ── Cek server ────────────────────────────────────────────────────────────
+  statusEl.textContent = 'Memeriksa server inference…';
+  const serverOk = await checkInferenceServer();
+  if (!serverOk) {
+    statusEl.innerHTML = 'Server tidak berjalan.<br>Jalankan: <b>cd Inference &amp;&amp; python api_server.py</b>';
+    btn.disabled = false; return;
+  }
+
+  // ── Crawl status selama nunggu (~1-2 menit) ───────────────────────────────
+  const stages = [
+    'Mengambil data GFW dari server…',
+    'Memfilter vessel di Indonesia…',
+    'Mengambil track per vessel…',
+    'Menjalankan inference model…',
+    'Menganalisis hasil…',
+  ];
+  let stageIdx = 0;
+  statusEl.textContent = stages[0];
+  const stageTimer = setInterval(() => {
+    stageIdx = Math.min(stageIdx + 1, stages.length - 1);
+    statusEl.textContent = stages[stageIdx];
+  }, 20_000);
+
+  try {
+    const params = new URLSearchParams({ max_vessels: maxV, task });
+    if (startDate) params.set('start_date', startDate);
+    if (endDate)   params.set('end_date',   endDate);
+
+    const r = await fetch(`http://localhost:8765/inference/gfw?${params}`);
+    clearInterval(stageTimer);
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: `HTTP ${r.status}` }));
+      throw new Error(err.detail || JSON.stringify(err));
+    }
+    const data = await r.json();
+    aiResults = data.vessels || [];
+
+    if (!aiResults.length) {
+      statusEl.textContent = `Selesai ${data.elapsed_s}s — 0 kapal (kurang data poin). Coba perlebar rentang tanggal.`;
+    } else {
+      statusEl.textContent = `${aiResults.length} kapal dianalisis · ${data.elapsed_s}s · ${data.start_date} – ${data.end_date}`;
+      renderAiResults(aiResults);
+      plotAiMarkers(aiResults);
+    }
+  } catch (err) {
+    clearInterval(stageTimer);
+    statusEl.textContent = 'Error: ' + err.message;
+    console.error('[inference]', err);
+  } finally { btn.disabled = false; }
+}
+
+function renderAiResults(vessels) {
+  const el = document.getElementById('ai-results');
+  if (!vessels.length) {
+    el.innerHTML = '<div style="color:var(--text-3);font-size:12px">Tidak ada hasil. Coba perluas rentang tanggal.</div>';
+    return;
+  }
+  el.innerHTML = vessels.map((v, i) => {
+    const gear  = v.tasks?.gear;
+    const spoof = v.tasks?.spoofing;
+    const dark  = v.tasks?.godark;
+    const gc    = gear ? gearColor(gear.pred_label) : '#8b949e';
+
+    const gearHtml = gear ? `
+      <div class="ai-task-row">
+        <span class="ai-task-label">Gear</span>
+        <span class="ai-task-pred" style="color:${gc}">${esc(gear.pred_label)}</span>
+      </div>
+      <div class="ai-conf-bar"><div class="ai-conf-fill" style="width:${Math.round(gear.confidence*100)}%;background:${gc}"></div></div>` : '';
+
+    const spoofAlert = (spoof?.pred_label||'').toLowerCase().includes('spoof');
+    const darkAlert  = (dark?.pred_label||'').toLowerCase().includes('dark');
+
+    const alertHtml = (spoofAlert || darkAlert) ? `
+      <div class="ai-alert-bar" style="background:#f8514922;color:#f85149;border:1px solid #f8514944">
+        <span>⚠</span>
+        <span>${spoofAlert ? 'Spoofing terdeteksi' : ''}${spoofAlert && darkAlert ? ' · ' : ''}${darkAlert ? 'Go Dark terdeteksi' : ''}</span>
+      </div>` : '';
+
+    const spoofHtml = spoof && !spoofAlert ? `
+      <div class="ai-task-row" style="margin-top:3px">
+        <span class="ai-task-label">Spoofing</span>
+        <span class="ai-badge" style="background:#3fb95022;color:#3fb950;border:1px solid #3fb95044">${esc(spoof.pred_label)}</span>
+      </div>` : '';
+
+    const darkHtml = dark && !darkAlert ? `
+      <div class="ai-task-row">
+        <span class="ai-task-label">Go Dark</span>
+        <span class="ai-badge" style="background:#3fb95022;color:#3fb950;border:1px solid #3fb95044">${esc(dark.pred_label)}</span>
+      </div>` : '';
+
+    const posText = v.last_lat != null ? `${v.last_lat.toFixed(4)}°, ${v.last_lon.toFixed(4)}°` : 'Posisi tidak tersedia';
+
+    return `<div class="ai-vessel-card" onclick="focusAiVessel(${i})">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px">
+        <span class="ai-vessel-name">MMSI: ${esc(v.mmsi)}</span>
+        <span style="font-size:10px;color:var(--text-3)">${i+1}/${vessels.length}</span>
+      </div>
+      <div class="ai-vessel-mmsi">${posText}</div>
+      ${gearHtml}${spoofHtml}${darkHtml}${alertHtml}
+    </div>`;
+  }).join('');
+}
+
+function plotAiMarkers(vessels) {
+  aiLayer.clearLayers();
+  vessels.forEach((v, i) => {
+    if (v.last_lat == null || v.last_lon == null) return;
+    const icon   = makeAiIcon(v, false);
+    const marker = L.marker([v.last_lat, v.last_lon], { icon }).addTo(aiLayer);
+
+    const gear  = v.tasks?.gear;
+    const spoof = v.tasks?.spoofing;
+    const dark  = v.tasks?.godark;
+    const spoofAlert = (spoof?.pred_label||'').toLowerCase().includes('spoof');
+    const darkAlert  = (dark?.pred_label||'').toLowerCase().includes('dark');
+    const gc = gear ? gearColor(gear.pred_label) : '#8b949e';
+
+    // ── Permanent label di peta ───────────────────────────────────────
+    let tipHtml = `<div style="font-weight:700;color:#cdd9e5;margin-bottom:2px">MMSI ${esc(v.mmsi)}</div>`;
+    if (gear) {
+      const pct = Math.round(gear.confidence * 100);
+      tipHtml += `<div style="color:${gc};font-weight:700">${esc(gearShortLabel(gear.pred_label))} <span style="color:var(--text-3);font-weight:400">${pct}%</span></div>`;
+    }
+    if (spoofAlert) tipHtml += `<div style="color:#f85149;font-weight:700;margin-top:1px">⚠ Spoofing</div>`;
+    if (darkAlert)  tipHtml += `<div style="color:#e3901a;font-weight:700;margin-top:1px">⚠ Go Dark</div>`;
+
+    marker.bindTooltip(tipHtml, {
+      permanent: true,
+      direction: 'right',
+      offset: [8, 0],
+      className: 'ai-map-tip',
+    });
+
+    // ── Popup detail saat diklik ──────────────────────────────────────
+    let popup = `<div class="popup-name">MMSI: ${esc(v.mmsi)}</div>`;
+    if (gear)  popup += `<div class="popup-row"><span>Gear</span><b style="color:${gc}">${esc(gear.pred_label)}</b></div>`;
+    if (spoof) popup += `<div class="popup-row"><span>Spoofing</span><b style="color:${spoofColor(spoof.pred_label)}">${esc(spoof.pred_label)}</b></div>`;
+    if (dark)  popup += `<div class="popup-row"><span>Go Dark</span><b style="color:${darkColor(dark.pred_label)}">${esc(dark.pred_label)}</b></div>`;
+    popup += `<div class="popup-coord">${v.last_lat.toFixed(4)}°, ${v.last_lon.toFixed(4)}°</div>`;
+    marker.bindPopup(popup, { maxWidth:220 });
+
+    marker.on('click', () => focusAiVessel(i));
+  });
+}
+
+function focusAiVessel(i) {
+  const v = aiResults[i];
+  if (!v || v.last_lat == null) return;
+  map.setView([v.last_lat, v.last_lon], 10, { animate:true });
+}
+
 // ── INIT ───────────────────────────────────────────────────────────────────────
+setAiDefaultDates();
 setDefaultDates();
 setStatsMode('gfw');
 loadGfw();
+startAis();
 </script>
 </body>
 </html>
