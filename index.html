@@ -8,12 +8,12 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     :root {
-      --bg:          #090c10;
-      --surface:     #0f1318;
-      --surface-2:   #161b22;
-      --surface-3:   #1c2128;
-      --border:      #21262d;
-      --border-2:    #2d333b;
+      --bg:          #0a1a2f;
+      --surface:     #0f2340;
+      --surface-2:   #152d50;
+      --surface-3:   #1a3560;
+      --border:      #1e3f6a;
+      --border-2:    #254d7a;
       --text:        #cdd9e5;
       --text-2:      #8b949e;
       --text-3:      #545d68;
@@ -39,7 +39,7 @@
     /* ── TOPBAR ─────────────────────────────────────────────────────────── */
     #topbar {
       position:fixed; top:0; left:0; right:0; height:var(--topbar-h);
-      background:rgba(9,12,16,.95); border-bottom:1px solid var(--border);
+      background:rgba(10,26,47,.95); border-bottom:1px solid var(--border);
       display:flex; align-items:center; gap:0;
       z-index:900; backdrop-filter:blur(12px);
     }
@@ -106,58 +106,58 @@
     .tb-btn:hover { color:var(--text); background:var(--surface); }
     .tb-btn.active { color:var(--blue); }
 
-    /* ── STATS PANEL (kiri bawah topbar) ─────────────────────────────────── */
+    /* ── STATS PANEL (kiri atas) ──────────────────────────────────────────── */
     #stats-panel {
       position:fixed; top:calc(var(--topbar-h) + 12px); left:12px;
-      width:200px; background:rgba(9,12,16,.94); border:1px solid var(--border);
+      width:300px; background:rgba(10,26,47,.94); border:1px solid var(--border);
       border-radius:var(--radius); z-index:800; backdrop-filter:blur(12px);
       overflow:hidden; transition:width .2s ease;
     }
     #stats-panel.ai-mode {
-      width:300px;
-      max-height:calc(100vh - var(--topbar-h) - 24px);
+      width:400px;
+      max-height:calc(100vh - var(--topbar-h) - 60px);
       overflow-y:auto;
     }
     #stats-panel.ai-mode::-webkit-scrollbar { width:4px; }
     #stats-panel.ai-mode::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:2px; }
     .stats-header {
-      padding:10px 12px 8px; border-bottom:1px solid var(--border);
-      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      padding:16px 20px 12px; border-bottom:1px solid var(--border);
+      font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
       color:var(--text-3); display:flex; justify-content:space-between; align-items:center;
     }
-    .stats-date { font-size:10px; color:var(--text-3); font-weight:400; letter-spacing:0; text-transform:none; }
-    .stats-body { padding:8px 0; }
+    .stats-date { font-size:12px; color:var(--text-3); font-weight:400; letter-spacing:0; text-transform:none; }
+    .stats-body { padding:12px 0; }
     .stat-row {
-      display:flex; align-items:center; gap:8px;
-      padding:5px 12px; position:relative;
+      display:flex; align-items:center; gap:12px;
+      padding:9px 20px; position:relative;
     }
-    .stat-type { font-size:11px; color:var(--text-2); width:68px; flex-shrink:0; }
-    .stat-bar-wrap { flex:1; height:4px; background:var(--surface-3); border-radius:2px; overflow:hidden; }
+    .stat-type { font-size:15px; color:var(--text-2); width:90px; flex-shrink:0; }
+    .stat-bar-wrap { flex:1; height:6px; background:var(--surface-3); border-radius:2px; overflow:hidden; }
     .stat-bar { height:100%; border-radius:2px; transition:width .4s ease; }
-    .stat-val { font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text); width:24px; text-align:right; flex-shrink:0; }
+    .stat-val { font-size:16px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text); width:32px; text-align:right; flex-shrink:0; }
     .stats-footer {
-      padding:8px 12px; border-top:1px solid var(--border);
+      padding:14px 20px; border-top:1px solid var(--border);
       display:flex; justify-content:space-between; align-items:center;
     }
-    .stats-total-label { font-size:10px; color:var(--text-3); }
-    .stats-total-val   { font-size:13px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
+    .stats-total-label { font-size:13px; color:var(--text-3); }
+    .stats-total-val   { font-size:18px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
 
     /* AIS stats (ganti stats panel saat mode AIS) */
     .ais-stat-row { padding:8px 12px; display:flex; justify-content:space-between; align-items:baseline; }
     .ais-stat-label { font-size:11px; color:var(--text-2); }
     .ais-stat-val   { font-size:18px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
 
-    /* ── LEGEND (kiri bawah, di bawah stats) ─────────────────────────────── */
+    /* ── LEGEND (kiri bawah) ─────────────────────────────────────────────── */
     #legend {
       position:fixed; bottom:24px; left:12px;
-      background:rgba(9,12,16,.94); border:1px solid var(--border);
+      background:rgba(10,26,47,.94); border:1px solid var(--border);
       border-radius:var(--radius); z-index:800; backdrop-filter:blur(12px);
-      padding:10px 12px; font-size:11px; line-height:1.9; min-width:160px;
+      padding:20px 22px; font-size:15px; line-height:2.2; min-width:220px;
     }
-    .leg-title { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-3); display:block; margin-bottom:4px; }
-    .leg-row { display:flex; align-items:center; gap:8px; }
-    .leg-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-    .leg-label { color:var(--text-2); }
+    .leg-title { font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-3); display:block; margin-bottom:10px; }
+    .leg-row { display:flex; align-items:center; gap:12px; }
+    .leg-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+    .leg-label { color:var(--text-2); font-size:15px; }
 
     /* ── TOPBAR LOADING BAR ───────────────────────────────────────────────── */
     #topbar-progress {
@@ -173,7 +173,7 @@
     /* ── LOADING OVERLAY (fallback) ───────────────────────────────────────── */
     #loading {
       position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-      background:rgba(9,12,16,.96); border:1px solid var(--border);
+      background:rgba(10,26,47,.96); border:1px solid var(--border);
       border-radius:var(--radius); padding:24px 32px; z-index:2000;
       display:none; text-align:center; min-width:220px;
     }
@@ -212,7 +212,7 @@
     #sidebar {
       position:fixed; right:0; top:var(--topbar-h); bottom:0;
       width:min(320px, 90vw);
-      background:rgba(9,12,16,.97); border-left:1px solid var(--border);
+      background:rgba(10,26,47,.97); border-left:1px solid var(--border);
       z-index:850; display:flex; flex-direction:column;
       transform:translateX(100%); transition:transform .22s ease;
     }
@@ -318,7 +318,7 @@
     #tool-panel {
       position:fixed; top:calc(var(--topbar-h) + 8px); right:8px;
       width:min(360px, calc(100vw - 16px)); max-height:calc(100vh - var(--topbar-h) - 16px);
-      overflow:auto; background:rgba(9,12,16,.97); border:1px solid var(--border);
+      overflow:auto; background:rgba(10,26,47,.97); border:1px solid var(--border);
       border-radius:var(--radius); z-index:1000; display:none;
     }
     .panel-header {
@@ -370,7 +370,7 @@
     #ai-panel {
       position:fixed; top:calc(var(--topbar-h) + 8px); right:8px;
       width:min(380px, calc(100vw - 16px)); max-height:calc(100vh - var(--topbar-h) - 16px);
-      overflow:auto; background:rgba(9,12,16,.97); border:1px solid var(--border);
+      overflow:auto; background:rgba(10,26,47,.97); border:1px solid var(--border);
       border-radius:var(--radius); z-index:1000; display:none;
     }
     #ai-panel::-webkit-scrollbar { width:4px; }
@@ -618,9 +618,9 @@
 // ── MAP ───────────────────────────────────────────────────────────────────────
 const map = L.map('map', { zoomControl:false }).setView([-2.5, 117.0], 5);
 L.control.zoom({ position:'bottomright' }).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com">CARTO</a>',
-  subdomains:'abcd', maxZoom:19,
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution:'&copy; <a href="https://www.esri.com">Esri</a>, GEBCO, NOAA',
+  maxZoom:19,
 }).addTo(map);
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
