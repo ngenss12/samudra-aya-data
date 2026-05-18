@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     const t0 = Date.now();
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 9000);
+    const timer = setTimeout(() => controller.abort(), 55000);
 
     const gfwRes = await fetch(url.toString(), {
       method: "POST",

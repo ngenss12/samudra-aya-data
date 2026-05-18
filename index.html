@@ -34,7 +34,7 @@
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body { background:var(--bg); font-family:'Segoe UI',system-ui,-apple-system,sans-serif; color:var(--text); overflow:hidden; font-size:13px; }
-    #map { position:fixed; inset:0; background:var(--bg); z-index:0; }
+    #map { position:fixed; inset:0; background:#1a3a5c; z-index:0; }
 
     /* ── TOPBAR ─────────────────────────────────────────────────────────── */
     #topbar {
@@ -618,9 +618,9 @@
 // ── MAP ───────────────────────────────────────────────────────────────────────
 const map = L.map('map', { zoomControl:false }).setView([-2.5, 117.0], 5);
 L.control.zoom({ position:'bottomright' }).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com">CARTO</a>',
-  subdomains:'abcd', maxZoom:19,
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution:'&copy; <a href="https://www.esri.com">Esri</a>, GEBCO, NOAA, National Geographic',
+  maxZoom:13,
 }).addTo(map);
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
