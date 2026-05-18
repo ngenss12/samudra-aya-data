@@ -811,7 +811,7 @@ function setMode(m) {
   closeSidebar();
   trajLayer.clearLayers(); sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
   gfwEvents = [];
-  aiLayer.clearLayers(); aiResults = [];
+  aiLayer.clearLayers(); aiTrackLayer.clearLayers(); aiResults = []; aiRawTrack = [];
 
   document.getElementById('btn-gfw').className = 'mode-btn' + (m === 'gfw' ? ' active-gfw' : '');
   document.getElementById('btn-ais').className = 'mode-btn' + (m === 'ais' ? ' active-ais' : '');
@@ -1444,8 +1444,10 @@ setInterval(()=>{
 },60_000);
 
 // ── AI INFERENCE ──────────────────────────────────────────────────────────────
-let aiResults = [];
-const aiLayer = L.layerGroup().addTo(map);
+let aiResults  = [];
+let aiRawTrack = [];
+const aiLayer      = L.layerGroup().addTo(map);
+const aiTrackLayer = L.layerGroup().addTo(map);
 
 function gearShortLabel(label) {
   const m = {
@@ -1545,7 +1547,9 @@ async function runInference() {
   btn.disabled = true;
   resultsEl.innerHTML = '';
   aiLayer.clearLayers();
-  aiResults = [];
+  aiTrackLayer.clearLayers();
+  aiResults  = [];
+  aiRawTrack = [];
 
   // ── Cek server ────────────────────────────────────────────────────────────
   statusEl.textContent = 'Memeriksa server inference…';
@@ -1599,7 +1603,8 @@ async function runInference() {
     }
     clearInterval(stageTimer);
 
-    aiResults = data.vessels || [];
+    aiResults  = data.vessels || [];
+    aiRawTrack = data.raw_track || [];
 
     if (!aiResults.length) {
       statusEl.textContent = `Selesai ${data.elapsed_s}s — 0 kapal (kurang data poin). Coba perlebar rentang tanggal.`;
@@ -1660,7 +1665,13 @@ function renderAiResults(vessels) {
     return `<div class="ai-vessel-card" onclick="focusAiVessel(${i})">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px">
         <span class="ai-vessel-name">MMSI: ${esc(v.mmsi)}</span>
-        <span style="font-size:10px;color:var(--text-3)">${i+1}/${vessels.length}</span>
+        <div style="display:flex;gap:4px;align-items:center">
+          <button onclick="event.stopPropagation();plotAiTrajectory('${esc(v.mmsi)}')"
+            style="font-size:10px;padding:1px 6px;border-radius:3px;border:1px solid var(--border-2);
+                   background:var(--surface-2);color:var(--blue);cursor:pointer"
+            title="Tampilkan trajectory">Track</button>
+          <span style="font-size:10px;color:var(--text-3)">${i+1}/${vessels.length}</span>
+        </div>
       </div>
       <div class="ai-vessel-mmsi">${posText}</div>
       ${gearHtml}${spoofHtml}${darkHtml}${alertHtml}
@@ -1714,6 +1725,31 @@ function focusAiVessel(i) {
   const v = aiResults[i];
   if (!v || v.last_lat == null) return;
   map.setView([v.last_lat, v.last_lon], 10, { animate:true });
+  plotAiTrajectory(v.mmsi);
+}
+
+function plotAiTrajectory(mmsi) {
+  aiTrackLayer.clearLayers();
+  const pts = aiRawTrack
+    .filter(r => String(r.mmsi) === String(mmsi))
+    .sort((a, b) => a.timestamp - b.timestamp);
+  if (pts.length < 2) return;
+
+  const latlngs = pts.map(p => [p.lat, p.lon]);
+  const gear = aiResults.find(v => String(v.mmsi) === String(mmsi))?.tasks?.gear;
+  const color = gear ? gearColor(gear.pred_label) : '#4493f8';
+
+  L.polyline(latlngs, { color, weight: 2.5, opacity: 0.85 }).addTo(aiTrackLayer);
+
+  L.circleMarker(latlngs[0], { radius:5, color:'#3fb950', fillColor:'#3fb950', fillOpacity:1, weight:1.5 })
+    .bindPopup(`<b>Start</b><br>MMSI: ${mmsi}<br>${new Date(pts[0].timestamp*1000).toLocaleString('id-ID')}`)
+    .addTo(aiTrackLayer);
+
+  L.circleMarker(latlngs[latlngs.length-1], { radius:5, color:'#f85149', fillColor:'#f85149', fillOpacity:1, weight:1.5 })
+    .bindPopup(`<b>End</b><br>MMSI: ${mmsi}<br>${new Date(pts[pts.length-1].timestamp*1000).toLocaleString('id-ID')}`)
+    .addTo(aiTrackLayer);
+
+  map.fitBounds(L.latLngBounds(latlngs), { padding:[60,60], maxZoom:12 });
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
