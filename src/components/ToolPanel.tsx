@@ -15,7 +15,7 @@ function isoDaysAgo(n: number) {
 }
 
 export default function ToolPanel({ open, onClose, onPlotTrajectory, onClearTrajectory }: Props) {
-  const [tab, setTab] = useState<"query" | "trajectory">("trajectory");
+  const [tab, setTab] = useState<"query" | "trajectory" | "inference">("trajectory");
   const [queries, setQueries] = useState<GfwrQuery[]>([]);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<VesselSearchResult[] | null>(null);
@@ -24,6 +24,47 @@ export default function ToolPanel({ open, onClose, onPlotTrajectory, onClearTraj
   const [start, setStart] = useState(isoDaysAgo(30));
   const [end, setEnd] = useState(isoDaysAgo(0));
   const [summary, setSummary] = useState<string>("");
+
+  // Inference state
+  const [infStart, setInfStart] = useState(isoDaysAgo(30));
+  const [infEnd, setInfEnd] = useState(isoDaysAgo(0));
+  const [infMaxVessels, setInfMaxVessels] = useState(5);
+  const [infTask, setInfTask] = useState("all");
+  const [infLoading, setInfLoading] = useState(false);
+  const [infResult, setInfResult] = useState<any>(null);
+  const [infError, setInfError] = useState<string>("");
+
+  const INFERENCE_URL = import.meta.env.VITE_INFERENCE_URL || "https://ngenss12-inferencegfw.hf.space";
+
+  async function runInference() {
+    setInfLoading(true); setInfResult(null); setInfError("");
+    try {
+      const params = new URLSearchParams({
+        start_date: infStart,
+        end_date: infEnd,
+        max_vessels: String(infMaxVessels),
+        task: infTask,
+      });
+      // Mulai job async
+      const r = await fetch(`${INFERENCE_URL}/inference/gfw?${params}`);
+      if (!r.ok) throw new Error(`Server error ${r.status}`);
+      const { job_id } = await r.json();
+
+      // Poll sampai selesai
+      while (true) {
+        await new Promise(res => setTimeout(res, 3000));
+        const poll = await fetch(`${INFERENCE_URL}/inference/gfw/status/${job_id}`);
+        if (!poll.ok) throw new Error(`Poll error ${poll.status}`);
+        const data = await poll.json();
+        if (data.status === "done") { setInfResult(data); break; }
+        if (data.status === "error") throw new Error(data.detail || "Inference error");
+      }
+    } catch (e: any) {
+      setInfError(e.message || "Gagal menghubungi inference server.");
+    } finally {
+      setInfLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (tab === "query" && queries.length === 0) {
@@ -58,6 +99,7 @@ export default function ToolPanel({ open, onClose, onPlotTrajectory, onClearTraj
         <div className="px-3 flex gap-1 border-b border-border">
           <TabBtn active={tab === "query"} onClick={() => setTab("query")}>GFWR Query</TabBtn>
           <TabBtn active={tab === "trajectory"} onClick={() => setTab("trajectory")}>Trajectory</TabBtn>
+          <TabBtn active={tab === "inference"} onClick={() => setTab("inference")}>Inference</TabBtn>
         </div>
 
         <div className="overflow-y-auto thin-scroll p-3 text-sm flex-1">
@@ -174,6 +216,81 @@ export default function ToolPanel({ open, onClose, onPlotTrajectory, onClearTraj
               </div>
 
               {summary && <div className="text-xs text-muted-foreground">{summary}</div>}
+            </div>
+          )}
+
+          {tab === "inference" && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Mulai</label>
+                  <input type="date" value={infStart} onChange={(e) => setInfStart(e.target.value)}
+                    className="w-full bg-input border border-border rounded-md px-2 py-1.5 outline-none focus:border-primary" />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Selesai</label>
+                  <input type="date" value={infEnd} onChange={(e) => setInfEnd(e.target.value)}
+                    className="w-full bg-input border border-border rounded-md px-2 py-1.5 outline-none focus:border-primary" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Max Vessels</label>
+                  <input type="number" min={1} max={20} value={infMaxVessels}
+                    onChange={(e) => setInfMaxVessels(Number(e.target.value))}
+                    className="w-full bg-input border border-border rounded-md px-2 py-1.5 outline-none focus:border-primary" />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Task</label>
+                  <select value={infTask} onChange={(e) => setInfTask(e.target.value)}
+                    className="w-full bg-input border border-border rounded-md px-2 py-1.5 outline-none focus:border-primary">
+                    <option value="all">All</option>
+                    <option value="gear">Gear</option>
+                    <option value="spoofing">Spoofing</option>
+                    <option value="godark">Go Dark</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                onClick={runInference}
+                disabled={infLoading}
+                className="w-full px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50"
+              >
+                {infLoading ? "Menjalankan inference…" : "Run Inference"}
+              </button>
+
+              {infError && (
+                <div className="text-xs text-red-400 bg-red-400/10 rounded-md p-2">{infError}</div>
+              )}
+
+              {infResult && (
+                <div className="space-y-2">
+                  <div className="text-xs text-muted-foreground">
+                    {infResult.n_vessels} vessel · {infResult.elapsed_s}s · {infResult.start_date} → {infResult.end_date}
+                  </div>
+                  {infResult.vessels?.map((v: any) => (
+                    <div key={v.mmsi} className="rounded-lg border border-border bg-card/60 p-2.5 space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-xs">MMSI {v.mmsi}</span>
+                        {v.last_lat && (
+                          <span className="text-[10px] text-muted-foreground">
+                            {v.last_lat.toFixed(3)}, {v.last_lon?.toFixed(3)}
+                          </span>
+                        )}
+                      </div>
+                      {Object.entries(v.tasks || {}).map(([task, t]: [string, any]) => (
+                        <div key={task} className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground capitalize">{task}</span>
+                          <span className="font-medium text-primary">{t.pred_label}</span>
+                          <span className="text-muted-foreground">{(t.confidence * 100).toFixed(1)}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
