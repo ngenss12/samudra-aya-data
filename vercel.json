@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/gfw/events.js":          { "maxDuration": 60 },
-    "api/gfw/track.js":           { "maxDuration": 30 },
-    "api/gfw/vessels/search.js":  { "maxDuration": 15 }
-  },
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
