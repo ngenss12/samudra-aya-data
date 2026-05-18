@@ -34,6 +34,9 @@ export default async function handler(req, res) {
     console.log(`[gfw] fetching ${start} → ${end} …`);
     const t0 = Date.now();
 
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 9000);
+
     const gfwRes = await fetch(url.toString(), {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -41,11 +44,11 @@ export default async function handler(req, res) {
         datasets:    GFW_EVENT_DATASETS,
         startDate:   start.includes("T") ? start : `${start}T00:00:00Z`,
         endDate:     end.includes("T")   ? end   : `${end}T00:00:00Z`,
-        geometry:    INDONESIA_POLY,
         vesselTypes: ["FISHING"],
       }),
-      // no AbortSignal — GFW API needs ~60-90s with geometry filter
+      signal: controller.signal,
     });
+    clearTimeout(timer);
 
     if (!gfwRes.ok) {
       const text = await gfwRes.text().catch(() => "");
@@ -54,8 +57,15 @@ export default async function handler(req, res) {
     }
 
     const json = await gfwRes.json();
-    const data = json?.entries ?? [];
-    console.log(`[gfw] OK — ${data.length} events (${Date.now() - t0}ms)`);
+    const IDN_LAT = [-11.0, 6.0], IDN_LON = [95.0, 141.0];
+    const all  = json?.entries ?? [];
+    const data = all.filter(e => {
+      const lat = e?.position?.lat ?? e?.lat;
+      const lon = e?.position?.lon ?? e?.lon;
+      if (lat == null || lon == null) return false;
+      return lat >= IDN_LAT[0] && lat <= IDN_LAT[1] && lon >= IDN_LON[0] && lon <= IDN_LON[1];
+    });
+    console.log(`[gfw] OK — ${data.length}/${all.length} Indonesia events (${Date.now() - t0}ms)`);
 
     const payload = { events: data };
     cache = { payload, time: Date.now() };
