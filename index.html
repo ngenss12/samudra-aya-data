@@ -603,6 +603,7 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Oc
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const ships          = {};
 let   gfwEvents      = [];
+let   gfwRangeLabel  = '—';
 const trajLayer        = L.layerGroup().addTo(map);
 const sidebarTrajLayer = L.layerGroup().addTo(map);
 const historyLayer     = L.layerGroup().addTo(map);
@@ -740,7 +741,6 @@ function setStatsMode(m) {
       </div>
       <div id="ai-results" style="padding:0 8px 8px"></div>`;
     document.getElementById('stats-footer').style.display = 'none';
-    renderInferenceState();
   } else {
     statsPanel.classList.remove('ai-mode');
   }
@@ -766,8 +766,6 @@ function setMode(m) {
   clearAllMarkers();
   closeSidebar();
   trajLayer.clearLayers(); sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
-  gfwEvents = [];
-  aiLayer.clearLayers(); aiTrackLayer.clearLayers(); aiResults = []; aiRawTrack = [];
 
   document.getElementById('btn-gfw').className = 'mode-btn' + (m === 'gfw' ? ' active-gfw' : '');
   document.getElementById('btn-ais').className = 'mode-btn' + (m === 'ais' ? ' active-ais' : '');
@@ -786,10 +784,12 @@ function setMode(m) {
     if (gfwEl) gfwEl.textContent = '…';
     if (aisEl) aisEl.textContent = '…';
     loadGfw(true);
+    renderInferenceState();
     startAis();
   } else {
     stopAis();
-    loadGfw();
+    if (gfwEvents.length) restoreGfwEvents();
+    else loadGfw();
   }
 }
 
@@ -863,11 +863,18 @@ function gfwDateRange() {
   return { start:start.toISOString().slice(0,10), end:end.toISOString().slice(0,10) };
 }
 
-function clearGfwMarkers() {
+function clearGfwMarkers(preserveEvents = false) {
   for (const [k, s] of Object.entries(ships)) {
     if (s.data.source === 'gfw') { map.removeLayer(s.marker); delete ships[k]; }
   }
-  gfwEvents = [];
+  if (!preserveEvents) gfwEvents = [];
+}
+
+function restoreGfwEvents() {
+  gfwEvents.forEach(ev => processMarker(ev));
+  setStatus(true, `GFW · ${gfwEvents.length} events`);
+  updateStats();
+  document.getElementById('stats-range').textContent = gfwRangeLabel;
 }
 
 async function loadGfw(forceRefresh) {
@@ -881,6 +888,7 @@ async function loadGfw(forceRefresh) {
         const c = JSON.parse(raw);
         if (c?.t && Date.now()-c.t < GFW_CACHE_TTL && Array.isArray(c.events)) {
           gfwEvents = c.events;
+          gfwRangeLabel = c.range || gfwRangeLabel;
           c.events.forEach(ev => processMarker(ev));
           setStatus(true, `GFW · ${c.events.length} events`);
           updateStats();
@@ -893,10 +901,10 @@ async function loadGfw(forceRefresh) {
 
   // Hapus hanya marker GFW (bukan AIS) saat di AI mode
   if (isAiMode) {
-    clearGfwMarkers();
+    clearGfwMarkers(true);
     updateAiCounters();
   } else {
-    clearAllMarkers(); gfwEvents = [];
+    clearAllMarkers();
   }
 
   const { start, end } = gfwDateRange();
@@ -930,6 +938,7 @@ async function loadGfw(forceRefresh) {
     if (!r.ok || j.error) console.warn('[gfw] server error:', j.error || j);
     const evs = (j.events || []).map(normalizeGfw).filter(Boolean);
     gfwEvents = isAiMode ? [...gfwEvents.filter(e=>e.source!=='gfw'), ...evs] : evs;
+    gfwRangeLabel = rangeStr;
     evs.forEach(ev => processMarker(ev));
 
     clearInterval(progressTimer);
@@ -1488,18 +1497,6 @@ async function checkInferenceServer() {
   } catch { return false; }
 }
 
-async function getBatchInferenceIfReady() {
-  try {
-    const r = await fetch(`${INFERENCE_URL}/inference/batch/latest`, { signal: AbortSignal.timeout(5000) });
-    if (!r.ok) return null;
-    const data = await r.json();
-    if (!data?.vessels?.length) return null;
-    return data;
-  } catch {
-    return null;
-  }
-}
-
 function setInferenceMessage(message) {
   aiInferenceMessage = message;
   document.querySelectorAll('#ai-status').forEach(el => {
@@ -1519,7 +1516,22 @@ function renderInferenceState() {
   }
 
   renderAiResults(aiResults);
-  if (mode === 'ai') plotAiMarkers(aiResults);
+  plotAiMarkers(aiResults);
+}
+
+function mergeInferenceData(data) {
+  const byMmsi = new Map(aiResults.map(v => [String(v.mmsi), v]));
+  (data.vessels || []).forEach(v => {
+    if (v?.mmsi != null) byMmsi.set(String(v.mmsi), v);
+  });
+  aiResults = [...byMmsi.values()];
+
+  const trackByKey = new Map(aiRawTrack.map(p => [`${p.mmsi}|${p.timestamp}|${p.lat}|${p.lon}`, p]));
+  (data.raw_track || []).forEach(p => {
+    if (p?.mmsi == null || p?.timestamp == null) return;
+    trackByKey.set(`${p.mmsi}|${p.timestamp}|${p.lat}|${p.lon}`, p);
+  });
+  aiRawTrack = [...trackByKey.values()];
 }
 
 async function runInference() {
@@ -1532,15 +1544,6 @@ async function runInference() {
     setInferenceMessage('Server inference tidak berjalan atau sedang cold start.');
     inferenceInFlight = false;
     return;
-  }
-
-  setInferenceMessage('Memeriksa hasil batch inference terbaru...');
-  const batchData = await getBatchInferenceIfReady();
-  if (batchData) {
-    aiResults = batchData.vessels || [];
-    aiRawTrack = [];
-    setInferenceMessage(`${aiResults.length} kapal dianalisis dari batch · ${batchData.start_date} - ${batchData.end_date}`);
-    renderInferenceState();
   }
 
   // ── Crawl status selama nunggu (~1-2 menit) ───────────────────────────────
@@ -1560,8 +1563,16 @@ async function runInference() {
 
   try {
 
-    // Server inference menjalankan semua data dan semua task secara default.
-    const r = await fetch(`${INFERENCE_URL}/inference/gfw`);
+    const { start, end } = gfwDateRange();
+    const params = new URLSearchParams({
+      start_date: start,
+      end_date: end,
+      max_vessels: '0',
+      task: 'all',
+    });
+
+    // Ambil data sesuai request website, lalu server menjalankan inference.
+    const r = await fetch(`${INFERENCE_URL}/inference/gfw?${params}`);
     if (!r.ok) {
       const err = await r.json().catch(() => ({ detail: `HTTP ${r.status}` }));
       throw new Error(err.detail || JSON.stringify(err));
@@ -1584,13 +1595,13 @@ async function runInference() {
     }
     clearInterval(stageTimer);
 
-    aiResults  = data.vessels || [];
-    aiRawTrack = data.raw_track || [];
+    mergeInferenceData(data);
 
-    if (!aiResults.length) {
-      setInferenceMessage(`Selesai ${data.elapsed_s}s — 0 kapal (kurang data poin). Coba perlebar rentang tanggal.`);
+    const newCount = (data.vessels || []).length;
+    if (!newCount) {
+      setInferenceMessage(`Selesai ${data.elapsed_s}s - 0 kapal baru. Total ${aiResults.length} kapal.`);
     } else {
-      setInferenceMessage(`${aiResults.length} kapal dianalisis · ${data.elapsed_s}s · ${data.start_date} – ${data.end_date}`);
+      setInferenceMessage(`${newCount} kapal baru/terbarui - total ${aiResults.length} kapal - ${data.elapsed_s}s - ${data.start_date} to ${data.end_date}`);
       renderInferenceState();
     }
   } catch (err) {
