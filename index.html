@@ -1535,6 +1535,21 @@ async function checkInferenceServer() {
   } catch { return false; }
 }
 
+async function getBatchInferenceIfReady(startDate, endDate, task) {
+  try {
+    const r = await fetch(`${INFERENCE_URL}/inference/batch/latest`, { signal: AbortSignal.timeout(5000) });
+    if (!r.ok) return null;
+    const data = await r.json();
+    if (!data?.vessels?.length) return null;
+    if (startDate && data.start_date !== startDate) return null;
+    if (endDate && data.end_date !== endDate) return null;
+    if (task !== 'all' && !data.vessels.some(v => v.tasks?.[task])) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 async function runInference() {
   const task  = document.getElementById('ai-task').value;
   const maxV  = parseInt(document.getElementById('ai-max-vessels').value);
@@ -1555,8 +1570,20 @@ async function runInference() {
   statusEl.textContent = 'Memeriksa server inference…';
   const serverOk = await checkInferenceServer();
   if (!serverOk) {
-    statusEl.innerHTML = 'Server tidak berjalan.<br>Jalankan: <b>cd Inference &amp;&amp; python api_server.py</b>';
+    statusEl.innerHTML = 'Server inference tidak berjalan atau sedang cold start.';
     btn.disabled = false; return;
+  }
+
+  statusEl.textContent = 'Memeriksa hasil batch inference terbaru...';
+  const batchData = await getBatchInferenceIfReady(startDate, endDate, task);
+  if (batchData) {
+    aiResults = batchData.vessels || [];
+    aiRawTrack = [];
+    statusEl.textContent = `${aiResults.length} kapal dianalisis dari batch · ${batchData.start_date} - ${batchData.end_date}`;
+    renderAiResults(aiResults);
+    plotAiMarkers(aiResults);
+    btn.disabled = false;
+    return;
   }
 
   // ── Crawl status selama nunggu (~1-2 menit) ───────────────────────────────

@@ -36,9 +36,27 @@ export default function ToolPanel({ open, onClose, onPlotTrajectory, onClearTraj
 
   const INFERENCE_URL = import.meta.env.VITE_INFERENCE_URL || "https://ngenss12-inferencegfw.hf.space";
 
+  async function getBatchInferenceIfReady() {
+    const r = await fetch(`${INFERENCE_URL}/inference/batch/latest`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!r.ok) return null;
+    const data = await r.json();
+    if (!data?.vessels?.length) return null;
+    if (data.start_date !== infStart || data.end_date !== infEnd) return null;
+    if (infTask !== "all" && !data.vessels.some((v: any) => v.tasks?.[infTask])) return null;
+    return data;
+  }
+
   async function runInference() {
     setInfLoading(true); setInfResult(null); setInfError("");
     try {
+      const batch = await getBatchInferenceIfReady().catch(() => null);
+      if (batch) {
+        setInfResult(batch);
+        return;
+      }
+
       const params = new URLSearchParams({
         start_date: infStart,
         end_date: infEnd,
