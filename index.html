@@ -1537,7 +1537,7 @@ function mergeInferenceData(data) {
 async function runInference() {
   if (inferenceInFlight) return;
   inferenceInFlight = true;
-  // ── Cek server ────────────────────────────────────────────────────────────
+
   setInferenceMessage('Memeriksa server inference…');
   const serverOk = await checkInferenceServer();
   if (!serverOk) {
@@ -1546,23 +1546,7 @@ async function runInference() {
     return;
   }
 
-  // ── Crawl status selama nunggu (~1-2 menit) ───────────────────────────────
-  const stages = [
-    'Mengambil data GFW dari server…',
-    'Memfilter vessel di Indonesia…',
-    'Mengambil track per vessel…',
-    'Menjalankan inference model…',
-    'Menganalisis hasil…',
-  ];
-  let stageIdx = 0;
-  setInferenceMessage(stages[0]);
-  const stageTimer = setInterval(() => {
-    stageIdx = Math.min(stageIdx + 1, stages.length - 1);
-    setInferenceMessage(stages[stageIdx]);
-  }, 20_000);
-
   try {
-
     const { start, end } = gfwDateRange();
     const params = new URLSearchParams({
       start_date: start,
@@ -1571,41 +1555,52 @@ async function runInference() {
       task: 'all',
     });
 
-    // Ambil data sesuai request website, lalu server menjalankan inference.
-    const r = await fetch(`${INFERENCE_URL}/inference/gfw?${params}`);
+    setInferenceMessage('Menghubungi server inference…');
+    const r = await fetch(`${INFERENCE_URL}/inference/gfw/stream?${params}`);
     if (!r.ok) {
       const err = await r.json().catch(() => ({ detail: `HTTP ${r.status}` }));
       throw new Error(err.detail || JSON.stringify(err));
     }
-    let data = await r.json();
-    const { job_id } = data;
-    if (job_id) setInferenceMessage(`Job dimulai (${job_id}), menunggu hasil…`);
 
-    // Jika endpoint mengembalikan job async, poll sampai selesai.
-    while (job_id) {
-      await new Promise(res => setTimeout(res, 4000));
-      const poll = await fetch(`${INFERENCE_URL}/inference/gfw/status/${job_id}`);
-      if (!poll.ok) {
-        const err = await poll.json().catch(() => ({ detail: `Poll error ${poll.status}` }));
-        throw new Error(err.detail || JSON.stringify(err));
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let nTotal = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // simpan baris terakhir yang mungkin belum lengkap
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        let data;
+        try { data = JSON.parse(line.slice(6)); } catch { continue; }
+
+        if (data.type === 'discovered') {
+          nTotal = data.n_total;
+          setInferenceMessage(`Ditemukan ${nTotal} kapal, memulai fetch & inference…`);
+
+        } else if (data.type === 'vessel' && data.vessel) {
+          mergeInferenceData({ vessels: [data.vessel], raw_track: data.raw_track || [] });
+          renderInferenceState();
+          setInferenceMessage(`Inference ${data.vessel_index}/${nTotal} — ${data.vessel.mmsi} selesai. Total ${aiResults.length} kapal.`);
+
+        } else if (data.type === 'vessel_skip') {
+          setInferenceMessage(`Inference ${data.vessel_index}/${nTotal} — ${data.mmsi} tidak ada data.`);
+
+        } else if (data.type === 'done') {
+          setInferenceMessage(`Selesai ${data.elapsed_s}s — ${data.n_vessels} kapal diproses. Total ${aiResults.length} kapal.`);
+
+        } else if (data.type === 'error') {
+          throw new Error(data.error);
+        }
       }
-      const pollData = await poll.json();
-      if (pollData.status === 'done') { data = pollData; break; }
-      setInferenceMessage(`Inference berjalan… (${pollData.status})`);
-    }
-    clearInterval(stageTimer);
-
-    mergeInferenceData(data);
-
-    const newCount = (data.vessels || []).length;
-    if (!newCount) {
-      setInferenceMessage(`Selesai ${data.elapsed_s}s - 0 kapal baru. Total ${aiResults.length} kapal.`);
-    } else {
-      setInferenceMessage(`${newCount} kapal baru/terbarui - total ${aiResults.length} kapal - ${data.elapsed_s}s - ${data.start_date} to ${data.end_date}`);
-      renderInferenceState();
     }
   } catch (err) {
-    clearInterval(stageTimer);
     setInferenceMessage('Error: ' + err.message);
     console.error('[inference]', err);
   } finally {
