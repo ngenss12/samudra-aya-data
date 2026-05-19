@@ -569,30 +569,7 @@
     <button class="ai-panel-close" onclick="document.getElementById('ai-panel').style.display='none'" title="Tutup">✕</button>
   </div>
   <div class="panel-body">
-    <span class="p-label">Rentang Tanggal</span>
-    <div class="p-row">
-      <input type="date" class="p-input" id="ai-start" />
-      <input type="date" class="p-input" id="ai-end" />
-    </div>
-    <span class="p-label">Parameter</span>
-    <div class="p-row">
-      <select class="p-input" id="ai-max-vessels" style="flex:1">
-        <option value="3">3 kapal</option>
-        <option value="5" selected>5 kapal</option>
-        <option value="10">10 kapal</option>
-        <option value="20">20 kapal</option>
-      </select>
-      <select class="p-input" id="ai-task" style="flex:1">
-        <option value="all">Semua Model</option>
-        <option value="gear">Gear Type</option>
-        <option value="spoofing">Spoofing</option>
-        <option value="godark">Go Dark</option>
-      </select>
-    </div>
-    <div class="p-row">
-      <button class="p-btn primary" id="ai-run-btn" onclick="runInference()" style="flex:1">Jalankan Inference</button>
-    </div>
-    <div id="ai-status" style="font-size:11px;color:var(--text-3);margin-bottom:8px;min-height:16px"></div>
+    <div id="ai-status" style="font-size:11px;color:var(--text-3);margin-bottom:8px;min-height:16px">Memuat hasil inference batch terbaru...</div>
     <div id="ai-results"></div>
   </div>
 </div>
@@ -759,32 +736,11 @@ function setStatsMode(m) {
             <div style="font-size:16px;font-weight:700;color:var(--blue)" id="ai-cnt-ais">—</div>
           </div>
         </div>
-        <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px">Rentang Tanggal (GFW)</div>
-        <div style="display:flex;gap:5px;margin-bottom:6px">
-          <input type="date" class="p-input" id="ai-start" style="font-size:11px;padding:5px 7px;flex:1;min-width:0" />
-          <input type="date" class="p-input" id="ai-end"   style="font-size:11px;padding:5px 7px;flex:1;min-width:0" />
-        </div>
-        <div style="display:flex;gap:5px;margin-bottom:6px">
-          <select class="p-input" id="ai-max-vessels" style="flex:1;min-width:0;font-size:11px;padding:5px 6px">
-            <option value="3">3 kapal</option>
-            <option value="5" selected>5 kapal</option>
-            <option value="10">10 kapal</option>
-            <option value="20">20 kapal</option>
-          </select>
-          <select class="p-input" id="ai-task" style="flex:1;min-width:0;font-size:11px;padding:5px 6px">
-            <option value="all">Semua Model</option>
-            <option value="gear">Gear Type</option>
-            <option value="spoofing">Spoofing</option>
-            <option value="godark">Go Dark</option>
-          </select>
-        </div>
-        <button class="p-btn primary" id="ai-run-btn" onclick="runInference()"
-          style="width:100%;font-size:11px;padding:7px 10px;border-radius:var(--radius)">Jalankan Inference</button>
-        <div id="ai-status" style="font-size:10px;color:var(--text-3);margin-top:6px;min-height:14px;line-height:1.4;word-break:break-word"></div>
+        <div id="ai-status" style="font-size:10px;color:var(--text-3);margin-top:6px;min-height:14px;line-height:1.4;word-break:break-word">Memuat hasil inference batch terbaru...</div>
       </div>
       <div id="ai-results" style="padding:0 8px 8px"></div>`;
     document.getElementById('stats-footer').style.display = 'none';
-    setAiDefaultDates();
+    renderInferenceState();
   } else {
     statsPanel.classList.remove('ai-mode');
   }
@@ -1518,15 +1474,12 @@ function updateAiCounters() {
 }
 
 
-function setAiDefaultDates() {
-  const end   = new Date();
-  const start = new Date(end);
-  start.setDate(start.getDate() - 30);
-  const s = document.getElementById('ai-start'); if (s) s.value = start.toISOString().slice(0,10);
-  const e = document.getElementById('ai-end');   if (e) e.value = end.toISOString().slice(0,10);
-}
-
 const INFERENCE_URL = 'https://ngenss12-inferencegfw.hf.space';
+const INFERENCE_LOOP_DELAY_MS = 60_000;
+let inferenceLoopStarted = false;
+let inferenceLoopTimer = null;
+let inferenceInFlight = false;
+let aiInferenceMessage = 'Menunggu inference background...';
 
 async function checkInferenceServer() {
   try {
@@ -1535,55 +1488,59 @@ async function checkInferenceServer() {
   } catch { return false; }
 }
 
-async function getBatchInferenceIfReady(startDate, endDate, task) {
+async function getBatchInferenceIfReady() {
   try {
     const r = await fetch(`${INFERENCE_URL}/inference/batch/latest`, { signal: AbortSignal.timeout(5000) });
     if (!r.ok) return null;
     const data = await r.json();
     if (!data?.vessels?.length) return null;
-    if (startDate && data.start_date !== startDate) return null;
-    if (endDate && data.end_date !== endDate) return null;
-    if (task !== 'all' && !data.vessels.some(v => v.tasks?.[task])) return null;
     return data;
   } catch {
     return null;
   }
 }
 
-async function runInference() {
-  const task  = document.getElementById('ai-task').value;
-  const maxV  = parseInt(document.getElementById('ai-max-vessels').value);
-  const startDate = document.getElementById('ai-start')?.value || '';
-  const endDate   = document.getElementById('ai-end')?.value   || '';
-  const statusEl  = document.getElementById('ai-status');
-  const resultsEl = document.getElementById('ai-results');
-  const btn       = document.getElementById('ai-run-btn');
+function setInferenceMessage(message) {
+  aiInferenceMessage = message;
+  document.querySelectorAll('#ai-status').forEach(el => {
+    el.textContent = message;
+  });
+}
 
-  btn.disabled = true;
-  resultsEl.innerHTML = '';
-  aiLayer.clearLayers();
-  aiTrackLayer.clearLayers();
-  aiResults  = [];
-  aiRawTrack = [];
+function renderInferenceState() {
+  setInferenceMessage(aiInferenceMessage);
+  const resultEls = [...document.querySelectorAll('#ai-results')];
+  if (!resultEls.length) return;
 
-  // ── Cek server ────────────────────────────────────────────────────────────
-  statusEl.textContent = 'Memeriksa server inference…';
-  const serverOk = await checkInferenceServer();
-  if (!serverOk) {
-    statusEl.innerHTML = 'Server inference tidak berjalan atau sedang cold start.';
-    btn.disabled = false; return;
+  if (!aiResults.length) {
+    const emptyHtml = '<div style="color:var(--text-3);font-size:12px">Inference background sedang berjalan. Hasil akan muncul otomatis.</div>';
+    resultEls.forEach(el => { el.innerHTML = emptyHtml; });
+    return;
   }
 
-  statusEl.textContent = 'Memeriksa hasil batch inference terbaru...';
-  const batchData = await getBatchInferenceIfReady(startDate, endDate, task);
+  renderAiResults(aiResults);
+  if (mode === 'ai') plotAiMarkers(aiResults);
+}
+
+async function runInference() {
+  if (inferenceInFlight) return;
+  inferenceInFlight = true;
+  // ── Cek server ────────────────────────────────────────────────────────────
+  setInferenceMessage('Memeriksa server inference…');
+  const serverOk = await checkInferenceServer();
+  if (!serverOk) {
+    setInferenceMessage('Server inference tidak berjalan atau sedang cold start.');
+    inferenceInFlight = false;
+    return;
+  }
+
+  setInferenceMessage('Memeriksa hasil batch inference terbaru...');
+  const batchData = await getBatchInferenceIfReady();
   if (batchData) {
     aiResults = batchData.vessels || [];
     aiRawTrack = [];
-    statusEl.textContent = `${aiResults.length} kapal dianalisis dari batch · ${batchData.start_date} - ${batchData.end_date}`;
-    renderAiResults(aiResults);
-    plotAiMarkers(aiResults);
-    btn.disabled = false;
-    return;
+    setInferenceMessage(`${aiResults.length} kapal dianalisis dari batch · ${batchData.start_date} - ${batchData.end_date}`);
+    renderInferenceState();
   }
 
   // ── Crawl status selama nunggu (~1-2 menit) ───────────────────────────────
@@ -1595,29 +1552,26 @@ async function runInference() {
     'Menganalisis hasil…',
   ];
   let stageIdx = 0;
-  statusEl.textContent = stages[0];
+  setInferenceMessage(stages[0]);
   const stageTimer = setInterval(() => {
     stageIdx = Math.min(stageIdx + 1, stages.length - 1);
-    statusEl.textContent = stages[stageIdx];
+    setInferenceMessage(stages[stageIdx]);
   }, 20_000);
 
   try {
-    const params = new URLSearchParams({ max_vessels: maxV, task });
-    if (startDate) params.set('start_date', startDate);
-    if (endDate)   params.set('end_date',   endDate);
 
-    // Mulai job async — langsung dapat job_id
-    const r = await fetch(`${INFERENCE_URL}/inference/gfw?${params}`);
+    // Server inference menjalankan semua data dan semua task secara default.
+    const r = await fetch(`${INFERENCE_URL}/inference/gfw`);
     if (!r.ok) {
       const err = await r.json().catch(() => ({ detail: `HTTP ${r.status}` }));
       throw new Error(err.detail || JSON.stringify(err));
     }
-    const { job_id } = await r.json();
-    statusEl.textContent = `Job dimulai (${job_id}), menunggu hasil…`;
+    let data = await r.json();
+    const { job_id } = data;
+    if (job_id) setInferenceMessage(`Job dimulai (${job_id}), menunggu hasil…`);
 
-    // Poll sampai selesai
-    let data;
-    while (true) {
+    // Jika endpoint mengembalikan job async, poll sampai selesai.
+    while (job_id) {
       await new Promise(res => setTimeout(res, 4000));
       const poll = await fetch(`${INFERENCE_URL}/inference/gfw/status/${job_id}`);
       if (!poll.ok) {
@@ -1626,7 +1580,7 @@ async function runInference() {
       }
       const pollData = await poll.json();
       if (pollData.status === 'done') { data = pollData; break; }
-      statusEl.textContent = `Inference berjalan… (${pollData.status})`;
+      setInferenceMessage(`Inference berjalan… (${pollData.status})`);
     }
     clearInterval(stageTimer);
 
@@ -1634,26 +1588,41 @@ async function runInference() {
     aiRawTrack = data.raw_track || [];
 
     if (!aiResults.length) {
-      statusEl.textContent = `Selesai ${data.elapsed_s}s — 0 kapal (kurang data poin). Coba perlebar rentang tanggal.`;
+      setInferenceMessage(`Selesai ${data.elapsed_s}s — 0 kapal (kurang data poin). Coba perlebar rentang tanggal.`);
     } else {
-      statusEl.textContent = `${aiResults.length} kapal dianalisis · ${data.elapsed_s}s · ${data.start_date} – ${data.end_date}`;
-      renderAiResults(aiResults);
-      plotAiMarkers(aiResults);
+      setInferenceMessage(`${aiResults.length} kapal dianalisis · ${data.elapsed_s}s · ${data.start_date} – ${data.end_date}`);
+      renderInferenceState();
     }
   } catch (err) {
     clearInterval(stageTimer);
-    statusEl.textContent = 'Error: ' + err.message;
+    setInferenceMessage('Error: ' + err.message);
     console.error('[inference]', err);
-  } finally { btn.disabled = false; }
+  } finally {
+    inferenceInFlight = false;
+  }
+}
+
+function startInferenceLoop() {
+  if (inferenceLoopStarted) return;
+  inferenceLoopStarted = true;
+
+  const tick = async () => {
+    await runInference();
+    inferenceLoopTimer = setTimeout(tick, INFERENCE_LOOP_DELAY_MS);
+  };
+
+  tick();
 }
 
 function renderAiResults(vessels) {
-  const el = document.getElementById('ai-results');
+  const els = [...document.querySelectorAll('#ai-results')];
+  if (!els.length) return;
   if (!vessels.length) {
-    el.innerHTML = '<div style="color:var(--text-3);font-size:12px">Tidak ada hasil. Coba perluas rentang tanggal.</div>';
+    const emptyHtml = '<div style="color:var(--text-3);font-size:12px">Tidak ada hasil. Coba perluas rentang tanggal.</div>';
+    els.forEach(el => { el.innerHTML = emptyHtml; });
     return;
   }
-  el.innerHTML = vessels.map((v, i) => {
+  const html = vessels.map((v, i) => {
     const gear  = v.tasks?.gear;
     const spoof = v.tasks?.spoofing;
     const dark  = v.tasks?.godark;
@@ -1704,6 +1673,7 @@ function renderAiResults(vessels) {
       ${gearHtml}${spoofHtml}${darkHtml}${alertHtml}
     </div>`;
   }).join('');
+  els.forEach(el => { el.innerHTML = html; });
 }
 
 function plotAiMarkers(vessels) {
@@ -1780,11 +1750,11 @@ function plotAiTrajectory(mmsi) {
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
-setAiDefaultDates();
 setDefaultDates();
 setStatsMode('gfw');
 loadGfw();
 startAis();
+startInferenceLoop();
 </script>
 </body>
 </html>
