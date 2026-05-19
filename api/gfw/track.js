@@ -1,3 +1,6 @@
+import { cacheGet, cacheSet } from "../_redis.js";
+import { applyRateLimit } from "../_rate-limit.js";
+
 const GFW_BASE = "https://gateway.api.globalfishingwatch.org/v3";
 const GFW_TRACK_DATASET = "public-global-vessel-track:latest";
 const GFW_EVENT_DATASETS = [
@@ -22,6 +25,10 @@ function computeBounds(track) {
   return [[minLat, minLon], [maxLat, maxLon]];
 }
 
+function cacheKey(vesselId, startDate, endDate) {
+  return `gfw:track:v2:${encodeURIComponent(vesselId)}:${startDate}:${endDate}`;
+}
+
 export default async function handler(req, res) {
   const vesselId = req.query.vessel_id || "";
   const startDate = req.query.start_date || "";
@@ -29,6 +36,22 @@ export default async function handler(req, res) {
 
   if (!vesselId || !startDate || !endDate) {
     return res.status(400).json({ error: "vessel_id, start_date, end_date required" });
+  }
+
+  const allowed = await applyRateLimit(req, res, {
+    name: "gfw-track",
+    limit: 60,
+    windowSeconds: 10 * 60,
+  });
+  if (!allowed) return;
+
+  const key = cacheKey(vesselId, startDate, endDate);
+  const cached = await cacheGet(key);
+  if (cached?.payload) {
+    res.setHeader("x-cache", "HIT");
+    res.setHeader("cache-control", "public, max-age=300, stale-while-revalidate=3600");
+    res.setHeader("x-data-fetched-at", new Date(cached.fetchedAt).toISOString());
+    return res.json(cached.payload);
   }
 
   const token = process.env.GFW_TOKEN;
@@ -107,7 +130,7 @@ export default async function handler(req, res) {
       throw new Error(`GFW track failed: ${gfwRes.status}`);
     }
 
-    res.json({
+    const payload = {
       vessel_id: vesselId,
       start_date: startDate,
       end_date: endDate,
@@ -115,8 +138,20 @@ export default async function handler(req, res) {
       count: track.length,
       bounds: computeBounds(track),
       track,
-    });
+    };
+    await cacheSet(key, { payload, fetchedAt: Date.now() }, 6 * 60 * 60);
+    res.setHeader("x-cache", "MISS");
+    res.setHeader("cache-control", "public, max-age=300, stale-while-revalidate=3600");
+    res.json(payload);
   } catch (e) {
+    if (cached?.payload) {
+      res.setHeader("x-cache", "STALE");
+      res.setHeader("cache-control", "public, max-age=60, stale-while-revalidate=3600");
+      return res.json({
+        ...cached.payload,
+        warning: "Serving stale GFW track because live fetch failed",
+      });
+    }
     res.status(500).json({ error: e?.message || "track failed" });
   }
 }
