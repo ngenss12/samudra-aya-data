@@ -760,6 +760,23 @@ function setStatsMode(m) {
 }
 
 // ── MODE SWITCH ───────────────────────────────────────────────────────────────
+async function readJsonResponse(response) {
+  const text = await response.text();
+  let data = {};
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      const msg = text.replace(/\s+/g, ' ').trim().slice(0, 180);
+      throw new Error(`HTTP ${response.status}: ${msg || 'Respons bukan JSON'}`);
+    }
+  }
+  if (!response.ok || data.error) {
+    throw new Error(data.error || data.detail || `HTTP ${response.status}`);
+  }
+  return data;
+}
+
 function setMode(m) {
   if (m === mode) return;
   mode = m;
@@ -934,8 +951,7 @@ async function loadGfw(forceRefresh) {
 
   try {
     const r = await fetch(`/api/gfw/events?start_date=${start}&end_date=${end}`);
-    const j = await r.json();
-    if (!r.ok || j.error) console.warn('[gfw] server error:', j.error || j);
+    const j = await readJsonResponse(r);
     const evs = (j.events || []).map(normalizeGfw).filter(Boolean);
     gfwEvents = isAiMode ? [...gfwEvents.filter(e=>e.source!=='gfw'), ...evs] : evs;
     gfwRangeLabel = rangeStr;
@@ -1069,7 +1085,7 @@ async function fetchVesselIdentity(mmsi, vesselId) {
   const query = mmsi ? String(mmsi) : vesselId; if (!query) return;
   try {
     const r = await fetch(`/api/gfw/vessels/search?query=${encodeURIComponent(query)}&limit=1`);
-    const d = await r.json();
+    const d = await readJsonResponse(r);
     const v = d.entries?.[0];
     if (!v) { el.innerHTML = '<div class="sb-section-title">IDENTITAS GFW</div><div style="padding:8px 16px;font-size:12px;color:var(--text-3)">Tidak ditemukan di database GFW.</div>'; return; }
     el.innerHTML = `
@@ -1277,8 +1293,7 @@ async function toggleTraj() {
   try {
     const today = new Date().toISOString().slice(0,10);
     const r = await fetch(`/api/gfw/track?vessel_id=${encodeURIComponent(s.data.vesselId)}&start_date=2012-01-01&end_date=${today}`);
-    const j = await r.json();
-    if (j.error) throw new Error(j.error);
+    const j = await readJsonResponse(r);
     const track = j.track || [];
     if (track.length >= 2) {
       hideOtherMarkers(); plotSidebarTrail(track.map(p=>[p.lat,p.lon]), track);
@@ -1355,7 +1370,7 @@ async function searchVessel() {
   el.innerHTML='<div style="color:var(--text-2);font-size:12px">Mencari…</div>';
   try {
     const r=await fetch(`/api/gfw/vessels/search?query=${encodeURIComponent(q)}&limit=8`);
-    const d=await r.json(); if (d.error) throw new Error(d.error);
+    const d=await readJsonResponse(r);
     if (!d.entries?.length) { el.innerHTML='<div style="color:var(--text-2);font-size:12px">Tidak ada hasil.</div>'; return; }
     window.__vr=d.entries;
     el.innerHTML=d.entries.map((v,i)=>`
@@ -1378,7 +1393,7 @@ async function loadTrack() {
   sum.textContent='Mengambil trajectory…';
   try {
     const r=await fetch(`/api/gfw/track?vessel_id=${encodeURIComponent(selectedVessel.vessel_id)}&start_date=${start}&end_date=${end}`);
-    const d=await r.json(); if (d.error) throw new Error(d.error);
+    const d=await readJsonResponse(r);
     plotTraj(d.track||[]);
     sum.textContent=`${d.count} titik · ${d.source} · ${start} → ${end}`;
   } catch (err) { sum.textContent='Error: '+err.message; }
@@ -1856,8 +1871,7 @@ async function plotAiTrajectory(vesselRef) {
       const range = aiTrackDateRange(mmsi);
       setInferenceMessage(`Mengambil trajectory MMSI ${mmsi}...`);
       const r = await fetch(`/api/gfw/track?vessel_id=${encodeURIComponent(vesselId)}&start_date=${range.start}&end_date=${range.end}`);
-      const data = await r.json();
-      if (data.error) throw new Error(data.error);
+      const data = await readJsonResponse(r);
 
       const track = (data.track || [])
         .filter(p => p.lat != null && p.lon != null)
