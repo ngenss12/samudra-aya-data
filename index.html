@@ -1780,27 +1780,46 @@ function focusAiVessel(i) {
   plotAiTrajectory(v.mmsi);
 }
 
+function aiTrackTimeMs(ts) {
+  if (ts == null || ts === '') return 0;
+  if (typeof ts === 'number') return ts * 1000;
+  const n = Number(ts);
+  if (Number.isFinite(n)) return n * 1000;
+  const d = new Date(ts);
+  return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+function formatAiTrackTime(ts) {
+  const t = aiTrackTimeMs(ts);
+  return t ? new Date(t).toLocaleString('id-ID') : '';
+}
+
 function plotAiTrajectory(mmsi) {
   aiTrackLayer.clearLayers();
   const pts = aiRawTrack
     .filter(r => String(r.mmsi) === String(mmsi))
-    .sort((a, b) => a.timestamp - b.timestamp);
-  if (pts.length < 2) return;
+    .filter(r => Number.isFinite(Number(r.lat)) && Number.isFinite(Number(r.lon)))
+    .sort((a, b) => aiTrackTimeMs(a.timestamp) - aiTrackTimeMs(b.timestamp));
+  if (pts.length < 2) {
+    setInferenceMessage(`Trajectory inference belum tersedia untuk MMSI ${mmsi}.`);
+    return;
+  }
 
-  const latlngs = pts.map(p => [p.lat, p.lon]);
+  const latlngs = pts.map(p => [Number(p.lat), Number(p.lon)]);
   const gear = aiResults.find(v => String(v.mmsi) === String(mmsi))?.tasks?.gear;
   const color = gear ? gearColor(gear.pred_label) : '#4493f8';
 
   L.polyline(latlngs, { color, weight: 2.5, opacity: 0.85 }).addTo(aiTrackLayer);
 
   L.circleMarker(latlngs[0], { radius:5, color:'#3fb950', fillColor:'#3fb950', fillOpacity:1, weight:1.5 })
-    .bindPopup(`<b>Start</b><br>MMSI: ${mmsi}<br>${new Date(pts[0].timestamp*1000).toLocaleString('id-ID')}`)
+    .bindPopup(`<b>Start</b><br>MMSI: ${mmsi}<br>${formatAiTrackTime(pts[0].timestamp)}`)
     .addTo(aiTrackLayer);
 
   L.circleMarker(latlngs[latlngs.length-1], { radius:5, color:'#f85149', fillColor:'#f85149', fillOpacity:1, weight:1.5 })
-    .bindPopup(`<b>End</b><br>MMSI: ${mmsi}<br>${new Date(pts[pts.length-1].timestamp*1000).toLocaleString('id-ID')}`)
+    .bindPopup(`<b>End</b><br>MMSI: ${mmsi}<br>${formatAiTrackTime(pts[pts.length-1].timestamp)}`)
     .addTo(aiTrackLayer);
 
+  setInferenceMessage(`${pts.length} titik trajectory inference untuk MMSI ${mmsi}.`);
   map.fitBounds(L.latLngBounds(latlngs), { padding:[60,60], maxZoom:12 });
 }
 
