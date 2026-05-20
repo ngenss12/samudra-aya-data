@@ -1717,7 +1717,7 @@ function renderAiResults(vessels) {
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px">
         <span class="ai-vessel-name">MMSI: ${esc(v.mmsi)}</span>
         <div style="display:flex;gap:4px;align-items:center">
-          <button onclick="event.stopPropagation();plotAiTrajectory(${i})"
+          <button onclick="event.stopPropagation();plotAiTrajectory('${esc(v.mmsi)}')"
             style="font-size:10px;padding:1px 6px;border-radius:3px;border:1px solid var(--border-2);
                    background:var(--surface-2);color:var(--blue);cursor:pointer"
             title="Tampilkan trajectory">Track</button>
@@ -1777,26 +1777,14 @@ function focusAiVessel(i) {
   const v = aiResults[i];
   if (!v || v.last_lat == null) return;
   map.setView([v.last_lat, v.last_lon], 10, { animate:true });
-  plotAiTrajectory(i);
+  plotAiTrajectory(v.mmsi);
 }
 
-function formatTrackTime(ts) {
-  if (ts == null || ts === '') return '';
-  const d = typeof ts === 'number'
-    ? new Date(ts * 1000)
-    : new Date(ts);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString('id-ID');
-}
-
-function trackTimeMs(ts) {
-  if (ts == null || ts === '') return 0;
-  if (typeof ts === 'number') return ts * 1000;
-  const d = new Date(ts);
-  return Number.isNaN(d.getTime()) ? 0 : d.getTime();
-}
-
-function plotAiTrackPoints(mmsi, pts) {
+function plotAiTrajectory(mmsi) {
   aiTrackLayer.clearLayers();
+  const pts = aiRawTrack
+    .filter(r => String(r.mmsi) === String(mmsi))
+    .sort((a, b) => a.timestamp - b.timestamp);
   if (pts.length < 2) return;
 
   const latlngs = pts.map(p => [p.lat, p.lon]);
@@ -1806,57 +1794,14 @@ function plotAiTrackPoints(mmsi, pts) {
   L.polyline(latlngs, { color, weight: 2.5, opacity: 0.85 }).addTo(aiTrackLayer);
 
   L.circleMarker(latlngs[0], { radius:5, color:'#3fb950', fillColor:'#3fb950', fillOpacity:1, weight:1.5 })
-    .bindPopup(`<b>Start</b><br>MMSI: ${mmsi}<br>${formatTrackTime(pts[0].timestamp)}`)
+    .bindPopup(`<b>Start</b><br>MMSI: ${mmsi}<br>${new Date(pts[0].timestamp*1000).toLocaleString('id-ID')}`)
     .addTo(aiTrackLayer);
 
   L.circleMarker(latlngs[latlngs.length-1], { radius:5, color:'#f85149', fillColor:'#f85149', fillOpacity:1, weight:1.5 })
-    .bindPopup(`<b>End</b><br>MMSI: ${mmsi}<br>${formatTrackTime(pts[pts.length-1].timestamp)}`)
+    .bindPopup(`<b>End</b><br>MMSI: ${mmsi}<br>${new Date(pts[pts.length-1].timestamp*1000).toLocaleString('id-ID')}`)
     .addTo(aiTrackLayer);
 
   map.fitBounds(L.latLngBounds(latlngs), { padding:[60,60], maxZoom:12 });
-}
-
-async function plotAiTrajectory(vesselRef) {
-  const v = typeof vesselRef === 'number'
-    ? aiResults[vesselRef]
-    : aiResults.find(x => String(x.mmsi) === String(vesselRef));
-  if (!v) return;
-
-  aiTrackLayer.clearLayers();
-  const mmsi = v.mmsi;
-  const vesselId = v.vessel_id || v.vesselId;
-
-  if (vesselId) {
-    try {
-      const today = new Date().toISOString().slice(0,10);
-      setInferenceMessage(`Mengambil trajectory MMSI ${mmsi}...`);
-      const r = await fetch(`/api/gfw/track?vessel_id=${encodeURIComponent(vesselId)}&start_date=2012-01-01&end_date=${today}`);
-      const data = await r.json();
-      if (data.error) throw new Error(data.error);
-
-      const track = (data.track || [])
-        .filter(p => p.lat != null && p.lon != null)
-        .sort((a, b) => trackTimeMs(a.timestamp) - trackTimeMs(b.timestamp));
-      if (track.length >= 2) {
-        plotAiTrackPoints(mmsi, track);
-        setInferenceMessage(`${track.length} titik trajectory untuk MMSI ${mmsi}.`);
-        return;
-      }
-    } catch (err) {
-      console.warn('[ai trajectory gfw]', err);
-    }
-  }
-
-  const pts = aiRawTrack
-    .filter(r => String(r.mmsi) === String(mmsi))
-    .filter(p => p.lat != null && p.lon != null)
-    .sort((a, b) => trackTimeMs(a.timestamp) - trackTimeMs(b.timestamp));
-  if (pts.length < 2) {
-    setInferenceMessage(`Trajectory tidak tersedia untuk MMSI ${mmsi}.`);
-    return;
-  }
-  plotAiTrackPoints(mmsi, pts);
-  setInferenceMessage(`${pts.length} titik raw trajectory untuk MMSI ${mmsi}.`);
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
