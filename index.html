@@ -1795,6 +1795,31 @@ function trackTimeMs(ts) {
   return Number.isNaN(d.getTime()) ? 0 : d.getTime();
 }
 
+function aiTrackDateRange(mmsi) {
+  const times = aiRawTrack
+    .filter(r => String(r.mmsi) === String(mmsi))
+    .map(r => trackTimeMs(r.timestamp))
+    .filter(Boolean)
+    .sort((a, b) => a - b);
+  if (!times.length) {
+    const end = new Date();
+    const start = new Date(end);
+    start.setUTCDate(start.getUTCDate() - 30);
+    return {
+      start: start.toISOString().slice(0,10),
+      end: end.toISOString().slice(0,10),
+    };
+  }
+  const start = new Date(times[0]);
+  const end = new Date(times[times.length - 1]);
+  start.setUTCDate(start.getUTCDate() - 1);
+  end.setUTCDate(end.getUTCDate() + 1);
+  return {
+    start: start.toISOString().slice(0,10),
+    end: end.toISOString().slice(0,10),
+  };
+}
+
 function plotAiTrackPoints(mmsi, pts) {
   aiTrackLayer.clearLayers();
   if (pts.length < 2) return;
@@ -1828,9 +1853,9 @@ async function plotAiTrajectory(vesselRef) {
 
   if (vesselId) {
     try {
-      const today = new Date().toISOString().slice(0,10);
+      const range = aiTrackDateRange(mmsi);
       setInferenceMessage(`Mengambil trajectory MMSI ${mmsi}...`);
-      const r = await fetch(`/api/gfw/track?vessel_id=${encodeURIComponent(vesselId)}&start_date=2012-01-01&end_date=${today}`);
+      const r = await fetch(`/api/gfw/track?vessel_id=${encodeURIComponent(vesselId)}&start_date=${range.start}&end_date=${range.end}`);
       const data = await r.json();
       if (data.error) throw new Error(data.error);
 
