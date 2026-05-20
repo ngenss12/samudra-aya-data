@@ -1483,16 +1483,16 @@ function updateAiCounters() {
 }
 
 
-const INFERENCE_URL = 'https://ngenss12-inferencegfw.hf.space';
-const INFERENCE_LOOP_DELAY_MS = 60_000;
+const INFERENCE_LOOP_DELAY_MS = 30_000;
+const AI_CACHE_KEY = 'ai-inference-cache-v1';
 let inferenceLoopStarted = false;
 let inferenceLoopTimer = null;
 let inferenceInFlight = false;
-let aiInferenceMessage = 'Menunggu inference background...';
+let aiInferenceMessage = 'Memuat cache inference...';
 
 async function checkInferenceServer() {
   try {
-    const r = await fetch(`${INFERENCE_URL}/health`, { signal: AbortSignal.timeout(5000) });
+    const r = await fetch('/api/inference/health', { signal: AbortSignal.timeout(8000) });
     return r.ok;
   } catch { return false; }
 }
@@ -1502,6 +1502,29 @@ function setInferenceMessage(message) {
   document.querySelectorAll('#ai-status').forEach(el => {
     el.textContent = message;
   });
+}
+
+function saveInferenceCache() {
+  try {
+    localStorage.setItem(AI_CACHE_KEY, JSON.stringify({
+      t: Date.now(),
+      message: aiInferenceMessage,
+      results: aiResults,
+      rawTrack: aiRawTrack,
+    }));
+  } catch {}
+}
+
+function loadInferenceCache() {
+  try {
+    const raw = localStorage.getItem(AI_CACHE_KEY);
+    if (!raw) return;
+    const cached = JSON.parse(raw);
+    if (!Array.isArray(cached.results)) return;
+    aiResults = cached.results;
+    aiRawTrack = Array.isArray(cached.rawTrack) ? cached.rawTrack : [];
+    aiInferenceMessage = cached.message || `${aiResults.length} kapal dari cache lokal.`;
+  } catch {}
 }
 
 function renderInferenceState() {
@@ -1556,7 +1579,7 @@ async function runInference() {
     });
 
     setInferenceMessage('Menghubungi server inference…');
-    const r = await fetch(`${INFERENCE_URL}/inference/gfw/stream?${params}`);
+    const r = await fetch(`/api/inference/gfw/stream?${params}`);
     if (!r.ok) {
       const err = await r.json().catch(() => ({ detail: `HTTP ${r.status}` }));
       throw new Error(err.detail || JSON.stringify(err));
@@ -1608,12 +1631,38 @@ async function runInference() {
   }
 }
 
+async function syncInferenceResults() {
+  if (inferenceInFlight) return;
+  inferenceInFlight = true;
+
+  try {
+    if (!aiResults.length) setInferenceMessage('Mengambil hasil inference terbaru dari backend...');
+    const r = await fetch('/api/inference/batch/latest');
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: `HTTP ${r.status}` }));
+      throw new Error(err.detail || JSON.stringify(err));
+    }
+
+    const data = await r.json();
+    mergeInferenceData(data);
+    saveInferenceCache();
+    renderInferenceState();
+    setInferenceMessage(`${data.vessels?.length || 0} kapal dari backend - total tampil ${aiResults.length} kapal.`);
+    saveInferenceCache();
+  } catch (err) {
+    setInferenceMessage('Error: ' + err.message);
+    console.error('[inference-sync]', err);
+  } finally {
+    inferenceInFlight = false;
+  }
+}
+
 function startInferenceLoop() {
   if (inferenceLoopStarted) return;
   inferenceLoopStarted = true;
 
   const tick = async () => {
-    await runInference();
+    await syncInferenceResults();
     inferenceLoopTimer = setTimeout(tick, INFERENCE_LOOP_DELAY_MS);
   };
 
@@ -1756,6 +1805,7 @@ function plotAiTrajectory(mmsi) {
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
+loadInferenceCache();
 setDefaultDates();
 setStatsMode('gfw');
 loadGfw();
