@@ -617,6 +617,8 @@ let sidebarKey         = null;
 let trajActive         = false;
 let queryCatalogLoaded = false;
 let selectedVessel     = null;
+let gfwFetchInFlight   = false;
+let gfwFetchKey        = '';
 
 const GFW_CACHE_KEY = 'gfw-events-cache-v7';
 const GFW_CACHE_TTL = 10 * 60 * 1000;
@@ -896,6 +898,8 @@ function restoreGfwEvents() {
 
 async function loadGfw(forceRefresh) {
   const isAiMode = mode === 'ai';
+  const { start, end } = gfwDateRange();
+  const requestKey = `${start}:${end}`;
 
   // Cache hanya dipakai di GFW mode (bukan AI mode)
   if (!forceRefresh && !isAiMode) {
@@ -916,6 +920,10 @@ async function loadGfw(forceRefresh) {
     } catch {}
   }
 
+  if (gfwFetchInFlight && gfwFetchKey === requestKey) return;
+  gfwFetchInFlight = true;
+  gfwFetchKey = requestKey;
+
   // Hapus hanya marker GFW (bukan AIS) saat di AI mode
   if (isAiMode) {
     clearGfwMarkers(true);
@@ -924,7 +932,6 @@ async function loadGfw(forceRefresh) {
     clearAllMarkers();
   }
 
-  const { start, end } = gfwDateRange();
   const rangeStr = `${fmtDateShort(start)} – ${fmtDateShort(end)}`;
   if (!isAiMode) {
     setStatus(false, 'Memuat GFW…');
@@ -985,6 +992,9 @@ async function loadGfw(forceRefresh) {
     if (badgeRow) { setBadge('fishing','err'); setBadge('encounter','err'); setBadge('loitering','err'); }
     console.error('[gfw] fetch error:', err);
     if (!isAiMode) setStatus(false, 'GFW gagal: ' + err.message);
+  } finally {
+    gfwFetchInFlight = false;
+    gfwFetchKey = '';
   }
 }
 
