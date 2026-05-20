@@ -14,6 +14,7 @@ const INDONESIA_POLY = {
 
 const FRESH_TTL_SECONDS = 10 * 60;
 const STALE_TTL_SECONDS = 6 * 60 * 60;
+const MAX_EVENTS = 200;
 
 function toIsoDate(date) {
   return date.includes("T") ? date : `${date}T00:00:00Z`;
@@ -48,10 +49,14 @@ export default async function handler(req, res) {
   const key = cacheKey(start, end);
   const cached = await cacheGet(key);
   if (isFresh(cached)) {
+    const payload = {
+      ...cached.payload,
+      events: (cached.payload.events || []).slice(0, MAX_EVENTS),
+    };
     res.setHeader("x-cache", "HIT");
     res.setHeader("cache-control", "public, max-age=60, stale-while-revalidate=600");
     res.setHeader("x-data-fetched-at", new Date(cached.fetchedAt).toISOString());
-    return res.json(cached.payload);
+    return res.json(payload);
   }
 
   const token = process.env.GFW_TOKEN;
@@ -85,7 +90,7 @@ export default async function handler(req, res) {
     }
 
     const json = await gfwRes.json();
-    const data = json?.entries ?? [];
+    const data = (json?.entries ?? []).slice(0, MAX_EVENTS);
     console.log(`[gfw] OK - ${data.length} events (${Date.now() - t0}ms)`);
 
     const payload = { events: data };
@@ -101,6 +106,7 @@ export default async function handler(req, res) {
       res.setHeader("x-data-fetched-at", new Date(cached.fetchedAt).toISOString());
       return res.json({
         ...cached.payload,
+        events: (cached.payload.events || []).slice(0, MAX_EVENTS),
         warning: "Serving stale GFW data because live fetch failed",
       });
     }
