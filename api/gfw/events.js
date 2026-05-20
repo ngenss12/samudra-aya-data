@@ -14,6 +14,7 @@ const INDONESIA_POLY = {
 
 const FRESH_TTL_SECONDS = 10 * 60;
 const STALE_TTL_SECONDS = 6 * 60 * 60;
+const MAX_EVENTS = 200;
 
 function toIsoDate(date) {
   return date.includes("T") ? date : `${date}T00:00:00Z`;
@@ -140,9 +141,12 @@ export default async function handler(req, res) {
     for (const [chunkStart, chunkEnd] of chunks) {
       const chunkEvents = await fetchEventsChunk(token, chunkStart, chunkEnd);
       events.push(...chunkEvents);
+      if (dedupeEvents(events).length >= MAX_EVENTS) break;
     }
 
-    const data = dedupeEvents(events).sort((a, b) => new Date(b.start || 0) - new Date(a.start || 0));
+    const data = dedupeEvents(events)
+      .sort((a, b) => new Date(b.start || 0) - new Date(a.start || 0))
+      .slice(0, MAX_EVENTS);
     console.log(`[gfw] OK - ${data.length} events (${Date.now() - t0}ms)`);
 
     const payload = { events: data };
