@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/gfw/events-prewarm",
+      "schedule": "*/10 * * * *"
+    }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]

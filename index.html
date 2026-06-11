@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Samudra Aya — Pemantauan Kapal Indonesia</title>
+  <title>Ocean Nexus - Pemantauan Kapal Indonesia</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
@@ -44,13 +44,15 @@
       z-index:900; backdrop-filter:blur(12px);
     }
     .tb-brand {
-      padding:0 18px; font-size:13px; font-weight:700; letter-spacing:.04em;
+      padding:0 22px; font-size:13px; font-weight:700; letter-spacing:.04em;
       color:var(--text); white-space:nowrap; border-right:1px solid var(--border);
-      height:100%; display:flex; align-items:center; gap:8px;
+      height:100%; display:flex; align-items:center; gap:12px; flex-shrink:0;
     }
-    .tb-brand-dot {
-      width:6px; height:6px; border-radius:50%; background:var(--green);
-      flex-shrink:0;
+    .tb-brand-logos {
+      display:flex; align-items:center; gap:7px; flex-shrink:0;
+    }
+    .tb-brand-logo {
+      width:auto; height:28px; max-width:50px; object-fit:contain; flex-shrink:0;
     }
     .tb-modes {
       display:flex; height:100%; border-right:1px solid var(--border);
@@ -446,8 +448,12 @@
 <!-- TOPBAR -->
 <header id="topbar">
   <div class="tb-brand">
-    <span class="tb-brand-dot"></span>
-    SAMUDRA AYA
+    <span class="tb-brand-logos" aria-label="Partner logos">
+      <img class="tb-brand-logo" src="logo/LogoITS.png" alt="ITS" />
+      <img class="tb-brand-logo" src="logo/LogoKemendikSaintek.png" alt="KemendikSaintek" />
+      <img class="tb-brand-logo" src="logo/LogoLen.png" alt="Len" />
+    </span>
+    Ocean Nexus
   </div>
   <div class="tb-modes">
     <button class="mode-btn active-gfw" id="btn-gfw" onclick="setMode('gfw')">GFW Events</button>
