@@ -21,12 +21,12 @@ export default function ToolPanel({ open, onClose, onPlotTrajectory, onClearTraj
   const [results, setResults] = useState<VesselSearchResult[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [selected, setSelected] = useState<VesselSearchResult | null>(null);
-  const [start, setStart] = useState(isoDaysAgo(30));
+  const [start, setStart] = useState(isoDaysAgo(90));
   const [end, setEnd] = useState(isoDaysAgo(0));
   const [summary, setSummary] = useState<string>("");
 
   // Inference state
-  const [infStart, setInfStart] = useState(isoDaysAgo(30));
+  const [infStart, setInfStart] = useState(isoDaysAgo(90));
   const [infEnd, setInfEnd] = useState(isoDaysAgo(0));
   const [infMaxVessels, setInfMaxVessels] = useState(5);
   const [infTask, setInfTask] = useState("all");

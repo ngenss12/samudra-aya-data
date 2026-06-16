@@ -16,13 +16,29 @@ const FRESH_TTL_SECONDS = 10 * 60;
 const STALE_TTL_SECONDS = 6 * 60 * 60;
 const REFRESHING_TTL_SECONDS = 2 * 60;
 const MAX_EVENTS = 200;
+const MAX_LOOKBACK_DAYS = 90;
 
 function toIsoDate(date) {
   return date.includes("T") ? date : `${date}T00:00:00Z`;
 }
 
+function dateOnly(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function clampRange(start, end) {
+  const today = dateOnly(new Date());
+  const minStartDate = new Date();
+  minStartDate.setDate(minStartDate.getDate() - MAX_LOOKBACK_DAYS);
+  const minStart = dateOnly(minStartDate);
+  const safeEnd = !end || end > today || end < minStart ? today : end;
+  let safeStart = !start || start < minStart ? minStart : start;
+  if (safeStart > safeEnd) safeStart = minStart;
+  return { start: safeStart, end: safeEnd };
+}
+
 function cacheKey(start, end) {
-  return `gfw:events:idn:v2:${start}:${end}:fishing-encounter-loitering`;
+  return `gfw:events:idn:v3:${start}:${end}:fishing-encounter-loitering`;
 }
 
 function refreshingKey(start, end) {
@@ -69,7 +85,6 @@ async function fetchGfwEvents(start, end) {
       startDate: toIsoDate(start),
       endDate: toIsoDate(end),
       geometry: INDONESIA_POLY,
-      vesselTypes: ["FISHING"],
     }),
   });
 
@@ -104,17 +119,16 @@ export async function refreshGfwEvents(start, end) {
 export function defaultRange() {
   const end = new Date();
   const start = new Date(end);
-  start.setDate(start.getDate() - 30);
+  start.setDate(start.getDate() - MAX_LOOKBACK_DAYS);
   return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
+    start: dateOnly(start),
+    end: dateOnly(end),
   };
 }
 
 export default async function handler(req, res) {
   const range = defaultRange();
-  const start = req.query.start_date || range.start;
-  const end = req.query.end_date || range.end;
+  const { start, end } = clampRange(req.query.start_date || range.start, req.query.end_date || range.end);
   const forceRefresh = req.query.refresh === "1" || req.query.refresh === "true";
 
   const key = cacheKey(start, end);

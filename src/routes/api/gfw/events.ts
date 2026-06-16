@@ -10,7 +10,9 @@ export const Route = createFileRoute("/api/gfw/events")({
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url);
-        const start = url.searchParams.get("start_date") || "2012-01-01";
+        const defaultStart = new Date();
+        defaultStart.setDate(defaultStart.getDate() - 90);
+        const start = url.searchParams.get("start_date") || defaultStart.toISOString().slice(0, 10);
         const end = url.searchParams.get("end_date") || new Date().toISOString().slice(0, 10);
 
         if (cache && Date.now() - cache.time < SERVER_CACHE_TTL) {

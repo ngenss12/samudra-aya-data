@@ -8,9 +8,25 @@ const GFW_EVENT_DATASETS = [
   "public-global-encounters-events:latest",
   "public-global-loitering-events:latest",
 ];
+const MAX_LOOKBACK_DAYS = 90;
 
 function toIsoDate(date) {
   return date.includes("T") ? date : `${date}T00:00:00Z`;
+}
+
+function dateOnly(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function clampRange(startDate, endDate) {
+  const today = dateOnly(new Date());
+  const minStartDate = new Date();
+  minStartDate.setDate(minStartDate.getDate() - MAX_LOOKBACK_DAYS);
+  const minStart = dateOnly(minStartDate);
+  const safeEnd = !endDate || endDate > today || endDate < minStart ? today : endDate;
+  let safeStart = !startDate || startDate < minStart ? minStart : startDate;
+  if (safeStart > safeEnd) safeStart = minStart;
+  return { startDate: safeStart, endDate: safeEnd };
 }
 
 function computeBounds(track) {
@@ -31,12 +47,14 @@ function cacheKey(vesselId, startDate, endDate) {
 
 export default async function handler(req, res) {
   const vesselId = req.query.vessel_id || "";
-  const startDate = req.query.start_date || "";
-  const endDate = req.query.end_date || "";
+  const requestedStartDate = req.query.start_date || "";
+  const requestedEndDate = req.query.end_date || "";
 
-  if (!vesselId || !startDate || !endDate) {
+  if (!vesselId || !requestedStartDate || !requestedEndDate) {
     return res.status(400).json({ error: "vessel_id, start_date, end_date required" });
   }
+
+  const { startDate, endDate } = clampRange(requestedStartDate, requestedEndDate);
 
   const allowed = await applyRateLimit(req, res, {
     name: "gfw-track",

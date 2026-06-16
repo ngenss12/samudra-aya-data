@@ -624,8 +624,9 @@ let trajActive         = false;
 let queryCatalogLoaded = false;
 let selectedVessel     = null;
 
-const GFW_CACHE_KEY = 'gfw-events-cache-v7';
+const GFW_CACHE_KEY = 'gfw-events-cache-v8';
 const GFW_CACHE_TTL = 10 * 60 * 1000;
+const GFW_LOOKBACK_DAYS = 90;
 const AIS_TRAIL_MAX = 120;
 const AIS_BBOXES    = [
   [[-8.0,105.0],[-4.0,116.0]],
@@ -865,7 +866,7 @@ function parseAis(msg) {
 function gfwDateRange() {
   const end = new Date();
   const start = new Date(end);
-  start.setDate(start.getDate() - 30);
+  start.setDate(start.getDate() - GFW_LOOKBACK_DAYS);
   return { start:start.toISOString().slice(0,10), end:end.toISOString().slice(0,10) };
 }
 
@@ -1136,7 +1137,7 @@ function renderSidebarGfw(d) {
           <span class="hist-date">${fmtD(ev.start)}</span>
           <span class="hist-badge" style="background:${ec}22;color:${ec};border:1px solid ${ec}33">${esc(ev.type)}</span>
         </div>`; }).join('')
-    : '<div style="padding:8px 16px;font-size:11px;color:var(--text-3)">Tidak ada event lain dalam 30 hari.</div>';
+    : '<div style="padding:8px 16px;font-size:11px;color:var(--text-3)">Tidak ada event lain dalam 3 bulan terakhir.</div>';
 
   document.getElementById('sidebar-body').innerHTML = `
     <div class="sb-section">
@@ -1281,8 +1282,8 @@ async function toggleTraj() {
   if (!s.data.vesselId) { info.textContent = 'vessel_id tidak tersedia.'; return; }
   btn.className = 'sb-btn loading'; btn.textContent = 'Mengambil…'; info.textContent = '';
   try {
-    const today = new Date().toISOString().slice(0,10);
-    const r = await fetch(`/api/gfw/track?vessel_id=${encodeURIComponent(s.data.vesselId)}&start_date=2012-01-01&end_date=${today}`);
+    const { start, end } = gfwDateRange();
+    const r = await fetch(`/api/gfw/track?vessel_id=${encodeURIComponent(s.data.vesselId)}&start_date=${start}&end_date=${end}`);
     const j = await r.json();
     if (j.error) throw new Error(j.error);
     const track = j.track || [];
@@ -1349,10 +1350,11 @@ async function loadQueryCatalog() {
   } catch (err) { list.textContent = 'Gagal memuat: ' + err.message; }
 }
 function setDefaultDates() {
-  const end=new Date(), start=new Date(end);
-  start.setDate(start.getDate()-30);
-  document.getElementById('track-start').value = start.toISOString().slice(0,10);
-  document.getElementById('track-end').value   = end.toISOString().slice(0,10);
+  const { start, end } = gfwDateRange();
+  const startEl = document.getElementById('track-start');
+  const endEl = document.getElementById('track-end');
+  startEl.min = start; startEl.max = end; startEl.value = start;
+  endEl.min = start; endEl.max = end; endEl.value = end;
 }
 async function searchVessel() {
   const q=document.getElementById('vessel-query').value.trim(), el=document.getElementById('vessel-results');
