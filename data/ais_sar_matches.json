@@ -1,0 +1,66 @@
+{
+  "generated_at": "2026-06-13T12:16:10.098Z",
+  "source_ais": "DATASET AIS/ais_summary.json",
+  "source_mode": "raw_indonesia",
+  "source_sar": "ASF Search API / SENTINEL-1 metadata",
+  "downloaded_sar_scenes": false,
+  "note": "This file contains metadata candidates only. It does not download Sentinel-1 scenes.",
+  "searched_points": 5,
+  "matched_points": 1,
+  "missed_points": 0,
+  "windows_hours": [
+    6,
+    24
+  ],
+  "processing_levels": "GRD_HD,GRD_MD,GRD_HS,GRD_MS,GRD_FD",
+  "points_per_vessel": 1,
+  "indonesia_bbox": {
+    "minLat": -12.5,
+    "maxLat": 8.5,
+    "minLon": 92,
+    "maxLon": 142.5
+  },
+  "matches": [
+    {
+      "ais": {
+        "mmsi": "77182424306278",
+        "timestamp": 1437820867,
+        "time_iso": "2015-07-25T10:41:07Z",
+        "lat": 2.3973033428,
+        "lon": 101.7420501709,
+        "speed": 11.899999618499999,
+        "course": 310,
+        "gear": "drifting_longlines",
+        "gear_label": "Drifting Longlines",
+        "dataset_file": "drifting_longlines.csv",
+        "source": "dalhousie_longliner"
+      },
+      "query": {
+        "source": "ASF Search API",
+        "url": "https://api.daac.asf.alaska.edu/services/search/param?dataset=SENTINEL-1&intersectsWith=point%28101.7420501709+2.3973033428%29&start=2015-07-25T04%3A41%3A07Z&end=2015-07-25T16%3A41%3A07Z&processingLevel=GRD_HD%2CGRD_MD%2CGRD_HS%2CGRD_MS%2CGRD_FD&output=geojson&maxResults=5",
+        "window_hours": 6
+      },
+      "candidates": [
+        {
+          "scene_name": "S1A_IW_GRDH_1SDV_20150725T113335_20150725T113357_006967_009717_EBC9",
+          "platform": "Sentinel-1A",
+          "processing_level": "GRD_HD",
+          "beam_mode": "IW",
+          "polarization": "VV+VH",
+          "flight_direction": "ASCENDING",
+          "start_time": "2015-07-25T11:33:35Z",
+          "stop_time": "2015-07-25T11:33:57Z",
+          "absolute_orbit": 6967,
+          "path_number": 70,
+          "url": "https://datapool.asf.alaska.edu/GRD_HD/SA/S1A_IW_GRDH_1SDV_20150725T113335_20150725T113357_006967_009717_EBC9.zip",
+          "browse": [
+            "https://datapool.asf.alaska.edu/BROWSE/SA/S1A_IW_GRDH_1SDV_20150725T113335_20150725T113357_006967_009717_EBC9.jpg"
+          ],
+          "matched_window_hours": 6,
+          "time_delta_hours": 0.8744444444444445
+        }
+      ]
+    }
+  ],
+  "misses": []
+}

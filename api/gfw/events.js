@@ -57,6 +57,13 @@ function isFresh(entry) {
 }
 
 function publicPayload(entry, extra = {}) {
+  if (!entry?.payload) {
+    return {
+      events: [],
+      ...extra,
+      fetched_at: null,
+    };
+  }
   return {
     ...entry.payload,
     ...extra,
@@ -149,8 +156,19 @@ export default async function handler(req, res) {
   if (!allowed) return;
 
   try {
-    const { cached: refreshed } = await refreshGfwEvents(start, end);
-    res.setHeader("x-cache", "MISS");
+    const result = await refreshGfwEvents(start, end);
+    const refreshed = result.cached;
+    if (!refreshed?.payload) {
+      res.setHeader("x-cache", "PENDING");
+      res.setHeader("cache-control", "no-store");
+      return res.status(202).json({
+        events: [],
+        warning: result.skipped || "GFW refresh is running; cache is not ready yet",
+        fetched_at: null,
+      });
+    }
+
+    res.setHeader("x-cache", result.refreshed ? "MISS" : "STALE");
     res.setHeader("cache-control", "public, max-age=60, stale-while-revalidate=600");
     res.setHeader("x-data-fetched-at", new Date(refreshed.fetchedAt).toISOString());
     res.json(publicPayload(refreshed));

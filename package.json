@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
+    "build:hybrid-events": "node scripts/build-hybrid-events.mjs",
+    "build:hybrid-trajectories": "node scripts/build-hybrid-trajectories.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },

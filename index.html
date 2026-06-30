@@ -99,7 +99,7 @@
       border-left:1px solid var(--border);
     }
     .tb-btn {
-      padding:0 16px; height:100%; border:none; background:none;
+      padding:0 14px; min-width:44px; height:100%; border:none; background:none;
       color:var(--text-2); font-size:12px; font-weight:600; letter-spacing:.03em;
       cursor:pointer; transition:color .15s; white-space:nowrap;
       border-left:1px solid var(--border);
@@ -111,7 +111,7 @@
     /* ── STATS PANEL (kiri atas) ──────────────────────────────────────────── */
     #stats-panel {
       position:fixed; top:calc(var(--topbar-h) + 12px); left:12px;
-      width:300px; background:rgba(10,26,47,.94); border:1px solid var(--border);
+      width:260px; background:rgba(10,26,47,.94); border:1px solid var(--border);
       border-radius:var(--radius); z-index:800; backdrop-filter:blur(12px);
       overflow:hidden; transition:width .2s ease;
     }
@@ -122,23 +122,43 @@
     }
     #stats-panel.ai-mode::-webkit-scrollbar { width:4px; }
     #stats-panel.ai-mode::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:2px; }
+    #stats-panel.collapsed {
+      width:190px;
+      max-height:none;
+      overflow:hidden;
+    }
+    #stats-panel.collapsed .stats-body,
+    #stats-panel.collapsed .stats-footer,
+    #stats-panel.collapsed #ds-badges-row {
+      display:none !important;
+    }
     .stats-header {
-      padding:16px 20px 12px; border-bottom:1px solid var(--border);
-      font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      padding:12px 16px 9px; border-bottom:1px solid var(--border);
+      font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
       color:var(--text-3); display:flex; justify-content:space-between; align-items:center;
     }
-    .stats-date { font-size:12px; color:var(--text-3); font-weight:400; letter-spacing:0; text-transform:none; }
-    .stats-body { padding:12px 0; }
-    .stat-row {
-      display:flex; align-items:center; gap:12px;
-      padding:9px 20px; position:relative;
+    .stats-title-wrap { display:flex; align-items:center; gap:8px; min-width:0; }
+    .stats-title-wrap span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .stats-toggle {
+      width:20px; height:20px; border:1px solid var(--border-2);
+      border-radius:4px; background:var(--surface-2); color:var(--text-2);
+      cursor:pointer; font-size:13px; line-height:18px; font-weight:700;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0;
     }
-    .stat-type { font-size:15px; color:var(--text-2); width:90px; flex-shrink:0; }
-    .stat-bar-wrap { flex:1; height:6px; background:var(--surface-3); border-radius:2px; overflow:hidden; }
+    .stats-toggle:hover { color:var(--text); border-color:var(--blue); }
+    .stats-date { font-size:12px; color:var(--text-3); font-weight:400; letter-spacing:0; text-transform:none; }
+    .stats-body { padding:8px 0; }
+    .stat-row {
+      display:flex; align-items:center; gap:9px;
+      padding:7px 16px; position:relative;
+    }
+    .stat-type { font-size:13px; color:var(--text-2); width:78px; flex-shrink:0; }
+    .stat-bar-wrap { flex:1; height:5px; background:var(--surface-3); border-radius:2px; overflow:hidden; }
     .stat-bar { height:100%; border-radius:2px; transition:width .4s ease; }
-    .stat-val { font-size:16px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text); width:32px; text-align:right; flex-shrink:0; }
+    .stat-val { font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text); width:28px; text-align:right; flex-shrink:0; }
     .stats-footer {
-      padding:14px 20px; border-top:1px solid var(--border);
+      padding:10px 16px; border-top:1px solid var(--border);
       display:flex; justify-content:space-between; align-items:center;
     }
     .stats-total-label { font-size:13px; color:var(--text-3); }
@@ -154,12 +174,12 @@
       position:fixed; bottom:24px; left:12px;
       background:rgba(10,26,47,.94); border:1px solid var(--border);
       border-radius:var(--radius); z-index:800; backdrop-filter:blur(12px);
-      padding:20px 22px; font-size:15px; line-height:2.2; min-width:220px;
+      padding:14px 16px; font-size:13px; line-height:1.85; min-width:180px;
     }
-    .leg-title { font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-3); display:block; margin-bottom:10px; }
-    .leg-row { display:flex; align-items:center; gap:12px; }
-    .leg-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
-    .leg-label { color:var(--text-2); font-size:15px; }
+    .leg-title { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-3); display:block; margin-bottom:7px; }
+    .leg-row { display:flex; align-items:center; gap:9px; }
+    .leg-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+    .leg-label { color:var(--text-2); font-size:13px; }
 
     /* ── TOPBAR LOADING BAR ───────────────────────────────────────────────── */
     #topbar-progress {
@@ -455,28 +475,23 @@
     </span>
     Ocean Nexus
   </div>
-  <div class="tb-modes">
-    <button class="mode-btn active-gfw" id="btn-gfw" onclick="setMode('gfw')">GFW Events</button>
-    <button class="mode-btn" id="btn-ais" onclick="setMode('ais')">AIS Live</button>
-    <button class="mode-btn" id="btn-ai" onclick="setMode('ai')">AI Inference</button>
-  </div>
   <div class="tb-status">
     <span id="dot"></span>
     <span id="conn-label">Memuat…</span>
   </div>
   <div class="tb-counts">
     <div class="tb-count">
-      <span class="tb-count-label">Kapal</span>
+      <span class="tb-count-label">Marker</span>
       <span class="tb-count-val" id="ship-count">0</span>
     </div>
     <div class="tb-count">
-      <span class="tb-count-label">Pesan</span>
+      <span class="tb-count-label">Hybrid</span>
       <span class="tb-count-val" id="msg-count">0</span>
     </div>
     <span id="last-update">—</span>
   </div>
   <div class="tb-actions">
-    <button class="tb-btn" id="btn-tools" onclick="togglePanel()">Query & Track</button>
+    <button class="tb-btn" id="btn-tools" onclick="togglePanel()" title="Buka panel query dan trajectory" aria-label="Buka panel query dan trajectory">☰</button>
   </div>
 </header>
 
@@ -486,7 +501,10 @@
 <!-- STATS PANEL -->
 <div id="stats-panel">
   <div class="stats-header">
-    <span id="stats-mode-label">GFW EVENTS</span>
+    <div class="stats-title-wrap">
+      <button class="stats-toggle" id="stats-toggle" onclick="toggleStatsPanel()" title="Buka/tutup panel kiri">−</button>
+      <span id="stats-mode-label">GFW EVENTS</span>
+    </div>
     <span class="stats-date" id="stats-range">—</span>
   </div>
   <div id="ds-badges-row" class="ds-badges" style="display:none">
@@ -610,11 +628,13 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Oc
 const ships          = {};
 let   gfwEvents      = [];
 let   gfwRangeLabel  = '—';
+let   hybridEvents   = [];
 const trajLayer        = L.layerGroup().addTo(map);
 const sidebarTrajLayer = L.layerGroup().addTo(map);
 const historyLayer     = L.layerGroup().addTo(map);
+let sidebarTrajLegend  = null;
 
-let mode               = 'gfw';
+let mode               = 'ai';
 let msgCount           = 0;
 let aisKey             = localStorage.getItem('ais_key') || 'cadc1da33463ea00ff85c0c1d8506ce3b8a57fcd';
 if (!localStorage.getItem('ais_key')) localStorage.setItem('ais_key', aisKey);
@@ -625,7 +645,9 @@ let queryCatalogLoaded = false;
 let selectedVessel     = null;
 
 const GFW_CACHE_KEY = 'gfw-events-cache-v8';
+const HYBRID_CACHE_KEY = 'hybrid-events-cache-v1';
 const GFW_CACHE_TTL = 10 * 60 * 1000;
+const HYBRID_CACHE_TTL = 5 * 60 * 1000;
 const GFW_LOOKBACK_DAYS = 90;
 const AIS_TRAIL_MAX = 120;
 const AIS_BBOXES    = [
@@ -650,6 +672,22 @@ function gfwColor(type) {
     default:          return '#545d68';
   }
 }
+function hybridColor(type, severity) {
+  const t = (type||'').toUpperCase();
+  if ((severity||'').toUpperCase() === 'HIGH') {
+    if (t === 'GO_DARK') return '#f85149';
+    if (t === 'SPOOFING') return '#ff7b72';
+  }
+  switch (t) {
+    case 'GO_DARK': return '#f85149';
+    case 'SPOOFING': return '#ff7b72';
+    case 'TRAWLER_ACTIVITY': return '#e3901a';
+    case 'GROUP_ACTIVITY': return '#a371f7';
+    case 'SAR_NO_AIS': return '#4493f8';
+    case 'AIS_SAR_MISMATCH': return '#d29922';
+    default: return '#8b949e';
+  }
+}
 
 // ── ICONS ─────────────────────────────────────────────────────────────────────
 function makeAisIcon(speed, heading) {
@@ -671,6 +709,18 @@ function makeGfwIcon(type, selected) {
   return L.divIcon({
     className:'',
     html:`<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${c};border:1.5px solid #090c10;${glow}transition:.12s"></div>`,
+    iconSize:[sz,sz], iconAnchor:[sz/2,sz/2],
+  });
+}
+function makeHybridIcon(type, severity, selected) {
+  const c  = hybridColor(type, severity);
+  const sz = selected ? 18 : 13;
+  const ring = (severity||'').toUpperCase() === 'HIGH'
+    ? `border:2px solid #f85149;box-shadow:0 0 10px #f8514988;`
+    : `border:2px solid #090c10;box-shadow:0 0 5px ${c}77;`;
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:${sz}px;height:${sz}px;border-radius:4px;background:${c};${ring}transform:rotate(45deg);transition:.12s"></div>`,
     iconSize:[sz,sz], iconAnchor:[sz/2,sz/2],
   });
 }
@@ -726,22 +776,39 @@ function updateStats() {
   document.getElementById('bar-other').style.width     = pct(counts.OTHER)     + '%';
 }
 
+function applyStatsPanelState() {
+  const panel = document.getElementById('stats-panel');
+  const btn = document.getElementById('stats-toggle');
+  const collapsed = localStorage.getItem('stats_panel_collapsed') === '1';
+  panel.classList.toggle('collapsed', collapsed);
+  if (btn) {
+    btn.textContent = collapsed ? '+' : '−';
+    btn.title = collapsed ? 'Buka panel kiri' : 'Tutup panel kiri';
+  }
+}
+
+function toggleStatsPanel() {
+  const collapsed = localStorage.getItem('stats_panel_collapsed') === '1';
+  localStorage.setItem('stats_panel_collapsed', collapsed ? '0' : '1');
+  applyStatsPanelState();
+}
+
 function setStatsMode(m) {
   const statsPanel = document.getElementById('stats-panel');
   const body       = document.getElementById('stats-body');
-  document.getElementById('stats-mode-label').textContent = m === 'gfw' ? 'GFW EVENTS' : m === 'ai' ? 'AI INFERENCE' : 'AIS LIVE';
+  document.getElementById('stats-mode-label').textContent = m === 'gfw' ? 'GFW EVENTS' : m === 'ai' ? 'HYBRID AI' : 'AIS LIVE';
   if (m === 'ai') {
     statsPanel.classList.add('ai-mode');
     body.innerHTML = `
       <div style="padding:8px 10px 2px">
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <div style="flex:1;background:var(--surface-3);border-radius:4px;padding:5px 8px">
-            <div style="font-size:9px;color:var(--text-3);font-weight:700;letter-spacing:.06em;text-transform:uppercase">GFW</div>
-            <div style="font-size:16px;font-weight:700;color:var(--green)" id="ai-cnt-gfw">—</div>
+            <div style="font-size:9px;color:var(--text-3);font-weight:700;letter-spacing:.06em;text-transform:uppercase">Hybrid</div>
+            <div style="font-size:16px;font-weight:700;color:#ff7b72" id="ai-cnt-hybrid">—</div>
           </div>
           <div style="flex:1;background:var(--surface-3);border-radius:4px;padding:5px 8px">
-            <div style="font-size:9px;color:var(--text-3);font-weight:700;letter-spacing:.06em;text-transform:uppercase">AIS</div>
-            <div style="font-size:16px;font-weight:700;color:var(--blue)" id="ai-cnt-ais">—</div>
+            <div style="font-size:9px;color:var(--text-3);font-weight:700;letter-spacing:.06em;text-transform:uppercase">GFW</div>
+            <div style="font-size:16px;font-weight:700;color:var(--green)" id="ai-cnt-gfw">—</div>
           </div>
         </div>
         <div id="ai-status" style="font-size:10px;color:var(--text-3);margin-top:6px;min-height:14px;line-height:1.4;word-break:break-word">Memuat hasil inference batch terbaru...</div>
@@ -764,6 +831,7 @@ function setStatsMode(m) {
       <div class="stat-row"><span class="stat-type">Lainnya</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-other" style="background:var(--text-3);width:0%"></div></div><span class="stat-val" id="cnt-other">0</span></div>`;
     document.getElementById('stats-footer').style.display = 'flex';
   }
+  applyStatsPanelState();
 }
 
 // ── MODE SWITCH ───────────────────────────────────────────────────────────────
@@ -773,10 +841,11 @@ function setMode(m) {
   clearAllMarkers();
   closeSidebar();
   trajLayer.clearLayers(); sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
+  if (sidebarTrajLegend) { map.removeControl(sidebarTrajLegend); sidebarTrajLegend = null; }
 
-  document.getElementById('btn-gfw').className = 'mode-btn' + (m === 'gfw' ? ' active-gfw' : '');
-  document.getElementById('btn-ais').className = 'mode-btn' + (m === 'ais' ? ' active-ais' : '');
-  document.getElementById('btn-ai').className  = 'mode-btn' + (m === 'ai'  ? ' active-ai'  : '');
+  document.getElementById('btn-gfw')?.classList.toggle('active-gfw', m === 'gfw');
+  document.getElementById('btn-ais')?.classList.toggle('active-ais', m === 'ais');
+  document.getElementById('btn-ai')?.classList.toggle('active-ai', m === 'ai');
   document.getElementById('stats-range').textContent = '—';
   setStatsMode(m);
   updateLegend(m);
@@ -786,13 +855,13 @@ function setMode(m) {
     stopAis();
     startAis();
   } else if (m === 'ai') {
+    const hybridEl = document.getElementById('ai-cnt-hybrid');
     const gfwEl = document.getElementById('ai-cnt-gfw');
-    const aisEl = document.getElementById('ai-cnt-ais');
+    if (hybridEl) hybridEl.textContent = '…';
     if (gfwEl) gfwEl.textContent = '…';
-    if (aisEl) aisEl.textContent = '…';
+    loadHybridEvents();
     loadGfw(true);
     renderInferenceState();
-    startAis();
   } else {
     stopAis();
     if (gfwEvents.length) restoreGfwEvents();
@@ -804,7 +873,12 @@ function updateLegend(m) {
   const el = document.getElementById('legend');
   if (m === 'ai') {
     el.innerHTML = `
-      <span class="leg-title">Gear Type (AI)</span>
+      <span class="leg-title">Hybrid Events</span>
+      <div class="leg-row"><span class="leg-dot" style="background:#f85149;border-radius:3px;transform:rotate(45deg)"></span><span class="leg-label">Go Dark</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#ff7b72;border-radius:3px;transform:rotate(45deg)"></span><span class="leg-label">Spoofing</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#e3901a;border-radius:3px;transform:rotate(45deg)"></span><span class="leg-label">Trawler</span></div>
+      <div class="leg-row"><span class="leg-dot" style="background:#a371f7;border-radius:3px;transform:rotate(45deg)"></span><span class="leg-label">Group</span></div>
+      <span class="leg-title" style="margin-top:8px">Gear Type (AI)</span>
       <div class="leg-row"><span class="leg-dot" style="background:#4493f8"></span><span class="leg-label">Drifting Longline</span></div>
       <div class="leg-row"><span class="leg-dot" style="background:#d29922"></span><span class="leg-label">Set Longline</span></div>
       <div class="leg-row"><span class="leg-dot" style="background:#a371f7"></span><span class="leg-label">Gillnet</span></div>
@@ -967,7 +1041,7 @@ async function loadGfw(forceRefresh) {
       document.getElementById('stats-range').textContent = rangeStr;
       try { localStorage.setItem(GFW_CACHE_KEY, JSON.stringify({ t:Date.now(), events:evs, range:rangeStr })); } catch {}
     } else {
-      setStatus(true, `GFW ${evs.length} + AIS live · ${elapsedGfw}s`);
+      setStatus(true, 'Online');
       updateAiCounters();
     }
   } catch (err) {
@@ -977,6 +1051,65 @@ async function loadGfw(forceRefresh) {
     console.error('[gfw] fetch error:', err);
     if (!isAiMode) setStatus(false, 'GFW gagal: ' + err.message);
   }
+}
+
+async function loadHybridEvents(forceRefresh = false) {
+  if (mode !== 'ai') return;
+
+  if (!forceRefresh) {
+    try {
+      const raw = localStorage.getItem(HYBRID_CACHE_KEY);
+      if (raw) {
+        const c = JSON.parse(raw);
+        if (c?.t && Date.now()-c.t < HYBRID_CACHE_TTL && Array.isArray(c.events)) {
+          hybridEvents = c.events;
+          hybridEvents.forEach(ev => processMarker(ev));
+          document.getElementById('msg-count').textContent = hybridEvents.length || '0';
+          updateAiCounters();
+          setInferenceMessage(`Hybrid cache: ${hybridEvents.length} event precomputed siap tampil.`);
+          return;
+        }
+      }
+    } catch {}
+  }
+
+  try {
+    const r = await fetch('/api/hybrid/events?limit=200');
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(j.error || `HTTP ${r.status}`);
+    hybridEvents = (j.events || []).map(normalizeHybridEvent).filter(Boolean);
+    hybridEvents.forEach(ev => processMarker(ev));
+    document.getElementById('msg-count').textContent = hybridEvents.length || '0';
+    updateAiCounters();
+    try { localStorage.setItem(HYBRID_CACHE_KEY, JSON.stringify({ t:Date.now(), events:hybridEvents })); } catch {}
+    const suffix = j.demo ? 'demo fallback' : 'precomputed';
+    setInferenceMessage(`Hybrid ${suffix}: ${hybridEvents.length} event rule/inference dimuat.`);
+  } catch (err) {
+    console.error('[hybrid] fetch error:', err);
+    setInferenceMessage('Hybrid events gagal dimuat: ' + err.message);
+  }
+}
+
+function normalizeHybridEvent(ev) {
+  const lat = Number(ev.lat), lon = Number(ev.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  return {
+    source:'hybrid',
+    key:ev.id || `hybrid-${lat}-${lon}`,
+    id:ev.id,
+    type:(ev.type || 'OTHER').toUpperCase(),
+    severity:(ev.severity || 'MEDIUM').toUpperCase(),
+    lat, lon,
+    mmsi:ev.mmsi,
+    name:ev.name || 'Unknown',
+    flag:ev.flag,
+    detectedAt:ev.detectedAt,
+    reason:ev.reason,
+    confidence:ev.confidence,
+    method:ev.method,
+    dataset:ev.dataset,
+    evidence:ev.evidence || {},
+  };
 }
 
 
@@ -994,7 +1127,11 @@ function normalizeGfw(ev) {
 // ── MARKERS ───────────────────────────────────────────────────────────────────
 function processMarker(d) {
   if (!d.key) return;
-  const icon = d.source === 'gfw' ? makeGfwIcon(d.type, false) : makeAisIcon(d.speed, d.heading < 511 ? d.heading : d.course);
+  const icon = d.source === 'gfw'
+    ? makeGfwIcon(d.type, false)
+    : d.source === 'hybrid'
+      ? makeHybridIcon(d.type, d.severity, false)
+      : makeAisIcon(d.speed, d.heading < 511 ? d.heading : d.course);
   if (ships[d.key]) {
     ships[d.key].marker.setLatLng([d.lat,d.lon]).setIcon(icon);
     ships[d.key].data = { ...ships[d.key].data, ...d };
@@ -1003,7 +1140,7 @@ function processMarker(d) {
     if (sidebarKey === d.key) renderSidebarBody(ships[d.key].data);
   } else {
     const marker = L.marker([d.lat,d.lon], { icon }).addTo(map);
-    marker.on('click', () => d.source === 'gfw' ? openGfwDetail(d.key) : openSidebar(d.key));
+    marker.on('click', () => d.source === 'gfw' ? openGfwDetail(d.key) : d.source === 'hybrid' ? openHybridDetail(d.key) : openSidebar(d.key));
     ships[d.key] = { marker, data:d, lastSeen:Date.now(), trail:d.source==='ais'?[{lat:d.lat,lon:d.lon,t:Date.now()}]:[] };
   }
   if (d.source === 'ais') {
@@ -1090,6 +1227,80 @@ async function fetchVesselIdentity(mmsi, vesselId) {
   }
 }
 
+function openHybridDetail(key) {
+  const s = ships[key]; if (!s) return;
+  const d = s.data;
+  if (sidebarKey && ships[sidebarKey]?.data?.source === 'hybrid')
+    ships[sidebarKey].marker.setIcon(makeHybridIcon(ships[sidebarKey].data.type, ships[sidebarKey].data.severity, false));
+  s.marker.setIcon(makeHybridIcon(d.type, d.severity, true));
+  sidebarKey = key; trajActive = false;
+  sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
+  showHybridPopup(d, s.marker);
+  renderSidebarHybrid(d);
+  document.getElementById('sidebar').classList.add('open');
+  const btn = document.getElementById('sb-traj-btn');
+  btn.className = 'sb-btn';
+  btn.textContent = d.mmsi ? 'Tampilkan Trajectory' : 'Trajectory (N/A)';
+  document.getElementById('sb-traj-info').textContent = '';
+}
+
+function showHybridPopup(d, marker) {
+  const c = hybridColor(d.type, d.severity);
+  const pct = Number.isFinite(Number(d.confidence)) ? `${Math.round(Number(d.confidence) * 100)}%` : '—';
+  marker.bindPopup(`
+    <div class="popup-name">${esc(d.name||'Unknown')}</div>
+    <span class="popup-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${esc(d.type||'—')} · ${esc(d.severity||'—')}</span>
+    <div style="margin-top:6px">
+      ${d.mmsi ? `<div class="popup-row"><span>MMSI</span><b>${esc(String(d.mmsi))}</b></div>` : ''}
+      <div class="popup-row"><span>Confidence</span><b>${pct}</b></div>
+      <div class="popup-row"><span>Method</span><b>${esc(d.method||'rule')}</b></div>
+    </div>
+    <div class="popup-coord">${d.lat.toFixed(4)}°, ${d.lon.toFixed(4)}° · ${fmtD(d.detectedAt)}</div>
+  `, { maxWidth:240, autoPanPadding:[20,80] }).openPopup();
+}
+
+function renderSidebarHybrid(d) {
+  const c = hybridColor(d.type, d.severity);
+  const pct = Number.isFinite(Number(d.confidence)) ? `${Math.round(Number(d.confidence) * 100)}%` : '—';
+  const evidence = Object.entries(d.evidence || {})
+    .filter(([_, v]) => v != null && v !== '')
+    .map(([k, v]) => `<div class="sb-row"><span class="sb-key">${esc(k)}</span><span class="sb-val mono">${esc(String(v))}</span></div>`)
+    .join('');
+
+  document.getElementById('sidebar-title').textContent = d.name || 'Hybrid Event';
+  document.getElementById('sidebar-sub').textContent   = d.mmsi ? `MMSI: ${d.mmsi}` : 'Precomputed rule/inference event';
+  document.getElementById('sidebar-body').innerHTML = `
+    <div class="sb-section">
+      <div class="sb-section-title">
+        HYBRID EVENT
+        <span class="sb-section-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${esc(d.type||'—')}</span>
+      </div>
+      <div class="sb-row"><span class="sb-key">Severity</span><span class="sb-val" style="color:${c};font-weight:700">${esc(d.severity||'—')}</span></div>
+      <div class="sb-row"><span class="sb-key">Confidence</span><span class="sb-val">${pct}</span></div>
+      <div class="sb-row"><span class="sb-key">Terdeteksi</span><span class="sb-val">${fmtD(d.detectedAt)}</span></div>
+      <div class="sb-row"><span class="sb-key">Method</span><span class="sb-val mono">${esc(d.method||'—')}</span></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-title">ALASAN</div>
+      <div style="padding:8px 16px;font-size:12px;line-height:1.6;color:var(--text-2)">${esc(d.reason||'—')}</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-title">POSISI</div>
+      <div class="sb-row"><span class="sb-key">Lintang</span><span class="sb-val mono">${d.lat.toFixed(6)}°</span></div>
+      <div class="sb-row"><span class="sb-key">Bujur</span><span class="sb-val mono">${d.lon.toFixed(6)}°</span></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-title">DATA</div>
+      <div class="sb-row"><span class="sb-key">MMSI</span><span class="sb-val mono">${fmt(d.mmsi)}</span></div>
+      <div class="sb-row"><span class="sb-key">Dataset</span><span class="sb-val mono">${esc(d.dataset||'—')}</span></div>
+      <div class="sb-row"><span class="sb-key">Event ID</span><span class="sb-val mono dim" style="font-size:10px">${esc(d.id||'—')}</span></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-title">EVIDENCE</div>
+      ${evidence || '<div style="padding:8px 16px;font-size:11px;color:var(--text-3)">Tidak ada evidence tambahan.</div>'}
+    </div>`;
+}
+
 // ── SIDEBAR ───────────────────────────────────────────────────────────────────
 function openSidebar(key) {
   const s = ships[key]; if (!s) return;
@@ -1105,9 +1316,12 @@ function openSidebar(key) {
 function closeSidebar() {
   if (sidebarKey && ships[sidebarKey]?.data?.source === 'gfw')
     ships[sidebarKey].marker.setIcon(makeGfwIcon(ships[sidebarKey].data.type, false));
+  if (sidebarKey && ships[sidebarKey]?.data?.source === 'hybrid')
+    ships[sidebarKey].marker.setIcon(makeHybridIcon(ships[sidebarKey].data.type, ships[sidebarKey].data.severity, false));
   if (trajActive) showAllMarkers();
   sidebarKey = null; trajActive = false;
   sidebarTrajLayer.clearLayers(); historyLayer.clearLayers();
+  if (sidebarTrajLegend) { map.removeControl(sidebarTrajLegend); sidebarTrajLegend = null; }
   document.getElementById('sidebar').classList.remove('open');
 }
 
@@ -1171,6 +1385,7 @@ function renderSidebarGfw(d) {
 
 function renderSidebarBody(d) {
   if (d.source === 'gfw') { renderSidebarGfw(d); return; }
+  if (d.source === 'hybrid') { renderSidebarHybrid(d); return; }
   const c = aisColor(d.speed);
   document.getElementById('sidebar-title').textContent = d.name || 'Unknown';
   document.getElementById('sidebar-sub').textContent   = d.mmsi ? `MMSI: ${d.mmsi}` : '';
@@ -1266,6 +1481,7 @@ async function toggleTraj() {
 
   if (trajActive) {
     sidebarTrajLayer.clearLayers(); trajActive = false;
+    if (sidebarTrajLegend) { map.removeControl(sidebarTrajLegend); sidebarTrajLegend = null; }
     showAllMarkers();
     btn.className = 'sb-btn'; btn.textContent = 'Tampilkan Trajectory';
     info.textContent = '';
@@ -1278,6 +1494,34 @@ async function toggleTraj() {
     hideOtherMarkers(); plotSidebarTrail(trail);
     trajActive = true; btn.className = 'sb-btn traj-on'; btn.textContent = 'Sembunyikan Trajectory';
     info.textContent = `Trail AIS · ${trail.length} titik`; return;
+  }
+  if (s.data.source === 'hybrid') {
+    if (!s.data.mmsi) { info.textContent = 'MMSI tidak tersedia.'; return; }
+    btn.className = 'sb-btn loading'; btn.textContent = 'Mengambil…'; info.textContent = '';
+    try {
+      const r = await fetch(`/api/hybrid/trajectory?mmsi=${encodeURIComponent(s.data.mmsi)}&max_points=2000`);
+      const j = await r.json();
+      if (!r.ok || j.error) throw new Error(j.error || j.detail || `HTTP ${r.status}`);
+      const rawTrack = j.raw_track || [];
+      const kalmanTrack = j.kalman_track || j.track || [];
+      if (kalmanTrack.length >= 2) {
+        hideOtherMarkers();
+        if (rawTrack.length >= 2) plotSidebarComparison(rawTrack, kalmanTrack);
+        else plotSidebarTrail(kalmanTrack.map(p=>[p.lat,p.lon]), kalmanTrack);
+        trajActive = true; btn.className = 'sb-btn traj-on'; btn.textContent = 'Sembunyikan Trajectory';
+        const segText = j.segment_count ? ` · ${j.segment_count} segmen` : '';
+        info.textContent = `${kalmanTrack.length} titik · Raw AIS vs Kalman${segText}${j.sampled ? ' · sampled' : ''}`;
+        renderSidebarTrack(kalmanTrack);
+      } else {
+        btn.className = 'sb-btn'; btn.textContent = 'Tampilkan Trajectory';
+        info.textContent = 'Trajectory Kalman tidak ditemukan untuk MMSI ini.';
+      }
+    } catch (err) {
+      btn.className = 'sb-btn'; btn.textContent = 'Tampilkan Trajectory';
+      info.textContent = 'Trajectory hybrid tidak tersedia.';
+      console.error('[hybrid trajectory]', err);
+    }
+    return;
   }
   if (!s.data.vesselId) { info.textContent = 'vessel_id tidak tersedia.'; return; }
   btn.className = 'sb-btn loading'; btn.textContent = 'Mengambil…'; info.textContent = '';
@@ -1304,6 +1548,7 @@ async function toggleTraj() {
 
 function plotSidebarTrail(latlngs, trackData = []) {
   sidebarTrajLayer.clearLayers(); if (!latlngs.length) return;
+  if (sidebarTrajLegend) { map.removeControl(sidebarTrajLegend); sidebarTrajLegend = null; }
   if (latlngs.length >= 2)
     L.polyline(latlngs, { color:'#f85149', weight:2, opacity:.85 }).addTo(sidebarTrajLayer);
   L.circleMarker(latlngs[0], { radius:5, color:'#3fb950', fillColor:'#3fb950', fillOpacity:1 }).bindPopup('Start').addTo(sidebarTrajLayer);
@@ -1316,6 +1561,91 @@ function plotSidebarTrail(latlngs, trackData = []) {
       .bindPopup(`${p.timestamp||''}<br>Speed: ${p.speed??'—'} kn`).addTo(sidebarTrajLayer);
   });
   try { map.fitBounds(L.polyline(latlngs).getBounds(), { padding:[40,80] }); } catch {}
+}
+
+function plotRawAisTrajectory(rawLatLngs, rawTrack = []) {
+  if (rawLatLngs.length < 2) return;
+  L.polyline(rawLatLngs, {
+    color:'#07111f',
+    weight:4,
+    opacity:.65,
+    dashArray:'6 7',
+  }).addTo(sidebarTrajLayer);
+  L.polyline(rawLatLngs, {
+    color:'#2f81f7',
+    weight:2.5,
+    opacity:.85,
+    dashArray:'6 7',
+  }).bindPopup('Trajectory mentah AIS').addTo(sidebarTrajLayer);
+
+  L.circleMarker(rawLatLngs[0], {
+    radius:4,
+    color:'#2f81f7',
+    fillColor:'#2f81f7',
+    fillOpacity:1,
+    weight:1.5,
+  }).bindPopup(`Start Raw AIS<br>${rawTrack[0]?.timestamp || ''}`).addTo(sidebarTrajLayer);
+  L.circleMarker(rawLatLngs[rawLatLngs.length-1], {
+    radius:4,
+    color:'#2f81f7',
+    fillColor:'#07111f',
+    fillOpacity:.9,
+    weight:2,
+  }).bindPopup(`End Raw AIS<br>${rawTrack[rawTrack.length-1]?.timestamp || ''}`).addTo(sidebarTrajLayer);
+}
+
+function plotKalmanTrajectory(kalmanLatLngs, kalmanTrack = []) {
+  if (kalmanLatLngs.length < 2) return;
+  L.polyline(kalmanLatLngs, {
+    color:'#07111f',
+    weight:5.5,
+    opacity:.75,
+  }).addTo(sidebarTrajLayer);
+  L.polyline(kalmanLatLngs, {
+    color:'#f8e12d',
+    weight:3,
+    opacity:.95,
+  }).bindPopup('Trajectory Kalman').addTo(sidebarTrajLayer);
+
+  L.circleMarker(kalmanLatLngs[0], { radius:5, color:'#3fb950', fillColor:'#3fb950', fillOpacity:1 })
+    .bindPopup(`Start Kalman<br>${kalmanTrack[0]?.timestamp || ''}`).addTo(sidebarTrajLayer);
+  L.circleMarker(kalmanLatLngs[kalmanLatLngs.length-1], { radius:5, color:'#f85149', fillColor:'#f85149', fillOpacity:1 })
+    .bindPopup(`End Kalman<br>${kalmanTrack[kalmanTrack.length-1]?.timestamp || ''}`).addTo(sidebarTrajLayer);
+
+  const step = Math.max(1, Math.ceil(kalmanLatLngs.length / 50));
+  kalmanLatLngs.forEach((ll,i) => {
+    if (i%step!==0 || i===0 || i===kalmanLatLngs.length-1) return;
+    const p = kalmanTrack[i]||{};
+    L.circleMarker(ll, { radius:2.5, color:'#f8e12d', fillColor:'#f8e12d', fillOpacity:.9 })
+      .bindPopup(`${p.timestamp||''}<br>Kalman speed: ${p.speed??'—'} kn<br>Correction: ${p.correction_m??'—'} m`)
+      .addTo(sidebarTrajLayer);
+  });
+}
+
+function plotSidebarComparison(rawTrack, kalmanTrack) {
+  sidebarTrajLayer.clearLayers();
+  if (sidebarTrajLegend) { map.removeControl(sidebarTrajLegend); sidebarTrajLegend = null; }
+  const rawLatLngs = rawTrack
+    .filter(p => Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lon)))
+    .map(p => [Number(p.lat), Number(p.lon)]);
+  const kalmanLatLngs = kalmanTrack
+    .filter(p => Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lon)))
+    .map(p => [Number(p.lat), Number(p.lon)]);
+  if (kalmanLatLngs.length < 2) return;
+
+  plotRawAisTrajectory(rawLatLngs, rawTrack);
+  plotKalmanTrajectory(kalmanLatLngs, kalmanTrack);
+
+  sidebarTrajLegend = L.control({ position:'bottomleft' });
+  sidebarTrajLegend.onAdd = function() {
+    const div = L.DomUtil.create('div', '');
+    div.style.cssText = 'background:rgba(10,26,47,.94);border:1px solid var(--border);border-radius:4px;padding:8px 10px;color:var(--text-2);font-size:12px;line-height:1.7;box-shadow:0 6px 18px rgba(0,0,0,.35)';
+    div.innerHTML = '<b style="color:var(--text)">Trajectory</b><br><span style="color:#2f81f7">-- Raw AIS mentah</span><br><span style="color:#f8e12d">-- Kalman filtered</span>';
+    return div;
+  };
+  sidebarTrajLegend.addTo(map);
+
+  try { map.fitBounds(L.latLngBounds([...rawLatLngs, ...kalmanLatLngs]), { padding:[40,80] }); } catch {}
 }
 
 // ── TOOL PANEL ────────────────────────────────────────────────────────────────
@@ -1480,13 +1810,10 @@ function updateAiCounters() {
   if (_aiCounterTimer) return;
   _aiCounterTimer = setTimeout(() => {
     _aiCounterTimer = null;
+    const hybridEl = document.getElementById('ai-cnt-hybrid');
     const gfwEl = document.getElementById('ai-cnt-gfw');
-    const aisEl = document.getElementById('ai-cnt-ais');
+    if (hybridEl) hybridEl.textContent = hybridEvents.length || '0';
     if (gfwEl) gfwEl.textContent = gfwEvents.length || '0';
-    if (aisEl) {
-      const n = Object.values(ships).filter(s => s.data.source === 'ais').length;
-      aisEl.textContent = n || '0';
-    }
   }, 500);
 }
 
@@ -1834,9 +2161,11 @@ function plotAiTrajectory(mmsi) {
 // ── INIT ───────────────────────────────────────────────────────────────────────
 loadInferenceCache();
 setDefaultDates();
-setStatsMode('gfw');
-loadGfw();
-startAis();
+setStatsMode('ai');
+updateLegend('ai');
+loadHybridEvents();
+loadGfw(true);
+renderInferenceState();
 startInferenceLoop();
 </script>
 </body>

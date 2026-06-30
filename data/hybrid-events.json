@@ -1,0 +1,2274 @@
+{
+  "generatedAt": "2026-06-19T12:29:35.010Z",
+  "source": "samudra-aya local hybrid detector",
+  "inputs": {
+    "kalmanCsv": "data/ais_kalman_indonesia.csv",
+    "sarMatches": "data/ais_sar_matches.json",
+    "patchIndex": "data/sar_patches/patch_index.csv"
+  },
+  "thresholds": {
+    "goDarkGapHours": 6,
+    "spoofingSpeedKnots": 60,
+    "trawlerMinPoints": 20
+  },
+  "stats": {
+    "kalmanRowsScanned": 95733,
+    "kalmanRuleCounts": {
+      "goDark": 60,
+      "spoofing": 50,
+      "trawler": 0
+    },
+    "sarPatchEvents": 1,
+    "sarMatchEvents": 1,
+    "outputEvents": 112
+  },
+  "events": [
+    {
+      "id": "spoofing-165172979135964-1476499542",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-15T02:45:42Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 6396.1 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 6396.13,
+        "deltaHours": 0.14,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476499039",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 6.961666584,
+      "lon": 117.3499984741,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-15T02:37:19Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 18814.3 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 18814.35,
+        "deltaHours": 0.05,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476493881",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-15T01:11:21Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 5334.2 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 5334.23,
+        "deltaHours": 0.17,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476493279",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 6.8283333778,
+      "lon": 117.6583328247,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-15T01:01:19Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 9307.8 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 9307.85,
+        "deltaHours": 0.1,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476450727",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-14T13:12:07Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 4018.9 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 4018.9,
+        "deltaHours": 0.21,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476449977",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 4.979364872,
+      "lon": 119.5548553467,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-14T12:59:37Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 15864.1 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 15864.08,
+        "deltaHours": 0.05,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476449651",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-14T12:54:11Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 6356.9 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 6356.92,
+        "deltaHours": 0.13,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476448998",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 4.9200000763,
+      "lon": 119.5783309937,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-14T12:43:18Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 20445.4 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 20445.36,
+        "deltaHours": 0.04,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476443809",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 4.5764932632,
+      "lon": 119.5808563232,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-14T11:16:49Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 26739.2 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 26739.16,
+        "deltaHours": 0.03,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476107603",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-10T13:53:23Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 9585.3 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 9585.3,
+        "deltaHours": 0.07,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476038982",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -1.3784550428,
+      "lon": 117.3093566895,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T18:49:42Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 532272.8 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 532272.75,
+        "deltaHours": 0,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476027161",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T15:32:41Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 6121.9 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 6121.87,
+        "deltaHours": 0.06,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476024809",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -2.1400001049,
+      "lon": 116.7799987793,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T14:53:29Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 21488.2 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 21488.16,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476021990",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T14:06:30Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 18664.3 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 18664.3,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476020850",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T13:47:30Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 5103.7 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 5103.66,
+        "deltaHours": 0.07,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1476018125",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -2.5624632835,
+      "lon": 116.6967315674,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T13:02:05Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 4678.6 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 4678.61,
+        "deltaHours": 0.08,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1475986649",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -4.4383335114,
+      "lon": 115.9833297729,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T04:17:29Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 14794.9 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 14794.92,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1475986587",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T04:16:27Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 9434.5 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 9434.49,
+        "deltaHours": 0.03,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1475985366",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T03:56:06Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 9551.3 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 9551.34,
+        "deltaHours": 0.03,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1475985272",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -4.5118618011,
+      "lon": 115.9275741577,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T03:54:32Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 12826.1 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 12826.09,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1475976392",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -4.9382648468,
+      "lon": 115.5068511963,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-09T01:26:32Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 24811.9 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 24811.88,
+        "deltaHours": 0.01,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-165172979135964-1475956202",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1947283745,
+      "lon": 112.7394943237,
+      "mmsi": "165172979135964",
+      "name": "Unknown 165172979135964",
+      "detectedAt": "2016-10-08T19:50:02Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 7695.5 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "impliedSpeedKnots": 7695.52,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1470583786",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -1.0021666288,
+      "lon": 125.1208267212,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2016-08-07T15:29:46Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 60025.3 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 60025.27,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1469314510",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 7.000166893,
+      "lon": 113.3423309326,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2016-07-23T22:55:10Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 4338.2 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 4338.22,
+        "deltaHours": 0.32,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1465392933",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -8.9296665192,
+      "lon": 100.0003356934,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2016-06-08T13:35:33Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 148934.1 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 148934.13,
+        "deltaHours": 0.01,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1465388777",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -8.9413337708,
+      "lon": 114.3833312988,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2016-06-08T12:26:17Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 51180.9 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 51180.91,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1463053804",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -2.0969998837,
+      "lon": 100,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2016-05-12T11:50:04Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 43018.9 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 43018.9,
+        "deltaHours": 0.01,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1462788496",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 3.2951667309,
+      "lon": 137.5003356934,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2016-05-09T10:08:16Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 5874.3 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 5874.28,
+        "deltaHours": 0.36,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "godark-274677012401415-1460171156",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -12.4152145386,
+      "lon": 113.4314498901,
+      "mmsi": "274677012401415",
+      "name": "Unknown 274677012401415",
+      "detectedAt": "2016-04-09T03:05:56Z",
+      "reason": "AIS gap 4216.5 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 4216.5,
+        "nextSeenAt": "2016-10-01T19:36:09Z",
+        "lastSpeedKnots": 10.6,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-175026518773038-1458201846",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -12.3343398315,
+      "lon": 113.8984146798,
+      "mmsi": "175026518773038",
+      "name": "Unknown 175026518773038",
+      "detectedAt": "2016-03-17T08:04:06Z",
+      "reason": "AIS gap 4291.0 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 4291.05,
+        "nextSeenAt": "2016-09-12T03:06:55Z",
+        "lastSpeedKnots": 67.2469,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-87919276942456-1456730990",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -12.3496675111,
+      "lon": 113.7173304828,
+      "mmsi": "87919276942456",
+      "name": "Drifting Longlines 87919276942456",
+      "detectedAt": "2016-02-29T07:29:50Z",
+      "reason": "AIS gap 5087.3 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 5087.31,
+        "nextSeenAt": "2016-09-28T06:48:27Z",
+        "lastSpeedKnots": 1.3668,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-197235271847792-1455708041",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 3.140303457,
+      "lon": 142.4526234227,
+      "mmsi": "197235271847792",
+      "name": "Drifting Longlines 197235271847792",
+      "detectedAt": "2016-02-17T11:20:41Z",
+      "reason": "AIS gap 4547.4 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 4547.42,
+        "nextSeenAt": "2016-08-24T22:46:05Z",
+        "lastSpeedKnots": 5.4827,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-117813837180006-1450460881",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -12.4701339646,
+      "lon": 104.7924492516,
+      "mmsi": "117813837180006",
+      "name": "Drifting Longlines 117813837180006",
+      "detectedAt": "2015-12-18T17:48:01Z",
+      "reason": "AIS gap 7572.4 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 7572.35,
+        "nextSeenAt": "2016-10-29T06:09:19Z",
+        "lastSpeedKnots": 0.6978,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-41941786536935-1450312012",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 2.4903600545,
+      "lon": 142.3905972403,
+      "mmsi": "41941786536935",
+      "name": "Drifting Longlines 41941786536935",
+      "detectedAt": "2015-12-17T00:26:52Z",
+      "reason": "AIS gap 5687.7 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 5687.69,
+        "nextSeenAt": "2016-08-10T00:08:12Z",
+        "lastSpeedKnots": 7.7755,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-44081436890597-1450101925",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 2.125469923,
+      "lon": 142.3783874512,
+      "mmsi": "44081436890597",
+      "name": "Unknown 44081436890597",
+      "detectedAt": "2015-12-14T14:05:25Z",
+      "reason": "AIS gap 6902.3 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 6902.29,
+        "nextSeenAt": "2016-09-27T04:22:53Z",
+        "lastSpeedKnots": 7.2,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-241996059280485-1448002308",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 5.8300000685,
+      "lon": 92.8216630318,
+      "mmsi": "241996059280485",
+      "name": "Unknown 241996059280485",
+      "detectedAt": "2015-11-20T06:51:48Z",
+      "reason": "AIS gap 5295.7 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 5295.71,
+        "nextSeenAt": "2016-06-27T22:34:10Z",
+        "lastSpeedKnots": 10.6233,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-271347251834362-1445667598",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -1.5233783722,
+      "lon": 141.6007537842,
+      "mmsi": "271347251834362",
+      "name": "Drifting Longlines 271347251834362",
+      "detectedAt": "2015-10-24T06:19:58Z",
+      "reason": "AIS gap 4495.6 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 4495.65,
+        "nextSeenAt": "2016-04-28T13:58:58Z",
+        "lastSpeedKnots": 3.5,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-23406746127304-1442969383",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 8.1568271715,
+      "lon": 141.1046461455,
+      "mmsi": "23406746127304",
+      "name": "Drifting Longlines 23406746127304",
+      "detectedAt": "2015-09-23T00:49:43Z",
+      "reason": "AIS gap 5105.8 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 5105.8,
+        "nextSeenAt": "2016-04-22T18:37:38Z",
+        "lastSpeedKnots": 54.8098,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-38322969102051-1438476101",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 4.9873833881,
+      "lon": 142.2585467779,
+      "mmsi": "38322969102051",
+      "name": "Purse Seines 38322969102051",
+      "detectedAt": "2015-08-02T00:41:41Z",
+      "reason": "AIS gap 3962.2 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "purse_seines.csv",
+      "evidence": {
+        "gapHours": 3962.23,
+        "nextSeenAt": "2016-01-14T02:55:37Z",
+        "lastSpeedKnots": 15.4264,
+        "gear": "purse_seines"
+      }
+    },
+    {
+      "id": "godark-192803403297411-1435888142",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -1.5040999651,
+      "lon": 141.9007415771,
+      "mmsi": "192803403297411",
+      "name": "Purse Seines 192803403297411",
+      "detectedAt": "2015-07-03T01:49:02Z",
+      "reason": "AIS gap 6043.8 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "purse_seines.csv",
+      "evidence": {
+        "gapHours": 6043.83,
+        "nextSeenAt": "2016-03-10T21:39:01Z",
+        "lastSpeedKnots": 13.4,
+        "gear": "purse_seines"
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1435398245",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 7.4318332672,
+      "lon": 137.5003356934,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-06-27T09:44:05Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 27909.8 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 27909.84,
+        "deltaHours": 0.08,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1434255625",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.4461665154,
+      "lon": 100.2204971313,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-06-14T04:20:25Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 7644.8 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 7644.81,
+        "deltaHours": 0.31,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1434246999",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 7.2694997787,
+      "lon": 101.8551635742,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-06-14T01:56:39Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 22605.2 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 22605.22,
+        "deltaHours": 0.09,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "godark-10880510825243-1431449456",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 7.6226768615,
+      "lon": 142.230342719,
+      "mmsi": "10880510825243",
+      "name": "Purse Seines 10880510825243",
+      "detectedAt": "2015-05-12T16:50:56Z",
+      "reason": "AIS gap 7277.5 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "purse_seines.csv",
+      "evidence": {
+        "gapHours": 7277.53,
+        "nextSeenAt": "2016-03-10T22:22:58Z",
+        "lastSpeedKnots": 123.475,
+        "gear": "purse_seines"
+      }
+    },
+    {
+      "id": "godark-198266627907369-1431362645",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 2.8153367043,
+      "lon": 142.4999847412,
+      "mmsi": "198266627907369",
+      "name": "Drifting Longlines 198266627907369",
+      "detectedAt": "2015-05-11T16:44:05Z",
+      "reason": "AIS gap 13242.0 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 13242.04,
+        "nextSeenAt": "2016-11-13T10:46:19Z",
+        "lastSpeedKnots": 7.2,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1430635067",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -5.6511664391,
+      "lon": 108.2511672974,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-05-03T06:37:47Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 86652.7 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 86652.71,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "godark-20001834541437-1430147422",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 3.1359550953,
+      "lon": 142.3537139893,
+      "mmsi": "20001834541437",
+      "name": "Drifting Longlines 20001834541437",
+      "detectedAt": "2015-04-27T15:10:22Z",
+      "reason": "AIS gap 6097.0 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 6097.05,
+        "nextSeenAt": "2016-01-06T16:13:05Z",
+        "lastSpeedKnots": 2.1,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-75704340932214-1429367458",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 6.048402729,
+      "lon": 142.2633353205,
+      "mmsi": "75704340932214",
+      "name": "Drifting Longlines 75704340932214",
+      "detectedAt": "2015-04-18T14:30:58Z",
+      "reason": "AIS gap 7834.8 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 7834.76,
+        "nextSeenAt": "2016-03-10T01:16:42Z",
+        "lastSpeedKnots": 8.0831,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-274677012401415-1428644918",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -6.2669315338,
+      "lon": 116.7290802002,
+      "mmsi": "274677012401415",
+      "name": "Unknown 274677012401415",
+      "detectedAt": "2015-04-10T05:48:38Z",
+      "reason": "AIS gap 3896.0 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 3895.96,
+        "nextSeenAt": "2015-09-19T13:46:00Z",
+        "lastSpeedKnots": 11.2,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-41941786536935-1427284537",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 3.1371836206,
+      "lon": 142.4854992719,
+      "mmsi": "41941786536935",
+      "name": "Drifting Longlines 41941786536935",
+      "detectedAt": "2015-03-25T11:55:37Z",
+      "reason": "AIS gap 4791.5 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 4791.47,
+        "nextSeenAt": "2015-10-11T03:23:33Z",
+        "lastSpeedKnots": 5.8815,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-175026518773038-1426564760",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -11.6451334894,
+      "lon": 114.4391490859,
+      "mmsi": "175026518773038",
+      "name": "Unknown 175026518773038",
+      "detectedAt": "2015-03-17T03:59:20Z",
+      "reason": "AIS gap 4265.7 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 4265.69,
+        "nextSeenAt": "2015-09-10T21:41:01Z",
+        "lastSpeedKnots": 120.2249,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1425664736",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 7.070499897,
+      "lon": 100.0003356934,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-03-06T17:58:56Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 5773.5 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 5773.51,
+        "deltaHours": 0.26,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1425446164",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 7.0549998283,
+      "lon": 100.2708358765,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-03-04T05:16:04Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 75543.5 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 75543.54,
+        "deltaHours": 0,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "godark-183307128826540-1425403796",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 4.6690873417,
+      "lon": 141.5685234375,
+      "mmsi": "183307128826540",
+      "name": "Unknown 183307128826540",
+      "detectedAt": "2015-03-03T17:29:56Z",
+      "reason": "AIS gap 9317.6 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 9317.56,
+        "nextSeenAt": "2016-03-25T23:03:42Z",
+        "lastSpeedKnots": 14.2315,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1422343096",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 8.3094997406,
+      "lon": 130.655670166,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-01-27T07:18:16Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 18483.4 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 18483.35,
+        "deltaHours": 0.09,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1421616055",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 7.9426665306,
+      "lon": 104.3336639404,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-01-18T21:20:55Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 4676.8 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 4676.76,
+        "deltaHours": 0.38,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1421152357",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 1,
+      "lon": 118.2708282471,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-01-13T12:32:37Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 32295.8 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 32295.83,
+        "deltaHours": 0.01,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1421152311",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 7.8731665611,
+      "lon": 118.2708282471,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-01-13T12:31:51Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 8685.2 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 8685.2,
+        "deltaHours": 0.13,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1420725377",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 7.4861664772,
+      "lon": 105.7708358765,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2015-01-08T13:56:17Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 8110.0 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 8110.01,
+        "deltaHours": 0.11,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "godark-117813837180006-1419088794",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -12.3854999542,
+      "lon": 111.0690002441,
+      "mmsi": "117813837180006",
+      "name": "Drifting Longlines 117813837180006",
+      "detectedAt": "2014-12-20T15:19:54Z",
+      "reason": "AIS gap 7083.8 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 7083.81,
+        "nextSeenAt": "2015-10-11T19:08:39Z",
+        "lastSpeedKnots": 11.6,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-87919276942456-1416896989",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -10.1116666794,
+      "lon": 92.249168396,
+      "mmsi": "87919276942456",
+      "name": "Drifting Longlines 87919276942456",
+      "detectedAt": "2014-11-25T06:29:49Z",
+      "reason": "AIS gap 8886.3 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 8886.33,
+        "nextSeenAt": "2015-11-30T12:49:48Z",
+        "lastSpeedKnots": 12.4,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-204349732031005-1416679552",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 2.0050001144,
+      "lon": 128.6041564941,
+      "mmsi": "204349732031005",
+      "name": "Drifting Longlines 204349732031005",
+      "detectedAt": "2014-11-22T18:05:52Z",
+      "reason": "AIS gap 12186.9 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 12186.86,
+        "nextSeenAt": "2016-04-13T12:57:23Z",
+        "lastSpeedKnots": 0,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-183307128826540-1403442973",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 1.5602600574,
+      "lon": 142.3380432129,
+      "mmsi": "183307128826540",
+      "name": "Unknown 183307128826540",
+      "detectedAt": "2014-06-22T13:16:13Z",
+      "reason": "AIS gap 6087.4 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 6087.45,
+        "nextSeenAt": "2015-03-03T04:42:56Z",
+        "lastSpeedKnots": 0.9,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-192803403297411-1401717058",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 5.6616482735,
+      "lon": 142.1081390381,
+      "mmsi": "192803403297411",
+      "name": "Purse Seines 192803403297411",
+      "detectedAt": "2014-06-02T13:50:58Z",
+      "reason": "AIS gap 9432.4 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "purse_seines.csv",
+      "evidence": {
+        "gapHours": 9432.44,
+        "nextSeenAt": "2015-06-30T14:17:10Z",
+        "lastSpeedKnots": 13.2,
+        "gear": "purse_seines"
+      }
+    },
+    {
+      "id": "godark-10880510825243-1401368730",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 8.0293369293,
+      "lon": 141.6566009521,
+      "mmsi": "10880510825243",
+      "name": "Purse Seines 10880510825243",
+      "detectedAt": "2014-05-29T13:05:30Z",
+      "reason": "AIS gap 4088.0 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "purse_seines.csv",
+      "evidence": {
+        "gapHours": 4088.03,
+        "nextSeenAt": "2014-11-15T21:07:04Z",
+        "lastSpeedKnots": 15,
+        "gear": "purse_seines"
+      }
+    },
+    {
+      "id": "godark-20001834541437-1400677233",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 3.3910556705,
+      "lon": 142.3918810594,
+      "mmsi": "20001834541437",
+      "name": "Drifting Longlines 20001834541437",
+      "detectedAt": "2014-05-21T13:00:33Z",
+      "reason": "AIS gap 5809.0 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 5809.04,
+        "nextSeenAt": "2015-01-18T14:03:13Z",
+        "lastSpeedKnots": 2.9682,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-263392518194890-1399035175",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 5.7228231155,
+      "lon": 142.0926666383,
+      "mmsi": "263392518194890",
+      "name": "Drifting Longlines 263392518194890",
+      "detectedAt": "2014-05-02T12:52:55Z",
+      "reason": "AIS gap 17434.6 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 17434.61,
+        "nextSeenAt": "2016-04-27T23:29:45Z",
+        "lastSpeedKnots": 10.1168,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-67346977622820-1397609022",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 0.2891666591,
+      "lon": 142.2440032959,
+      "mmsi": "67346977622820",
+      "name": "Unknown 67346977622820",
+      "detectedAt": "2014-04-16T00:43:42Z",
+      "reason": "AIS gap 16101.6 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 16101.58,
+        "nextSeenAt": "2016-02-15T22:18:13Z",
+        "lastSpeedKnots": 11.9,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-246929977513855-1396231899",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 1.1667922792,
+      "lon": 103.8146138248,
+      "mmsi": "246929977513855",
+      "name": "Unknown 246929977513855",
+      "detectedAt": "2014-03-31T02:11:39Z",
+      "reason": "AIS gap 9958.6 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 9958.63,
+        "nextSeenAt": "2015-05-20T00:49:24Z",
+        "lastSpeedKnots": 5.0813,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-274677012401415-1396122996",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -12.0223236084,
+      "lon": 113.7605895996,
+      "mmsi": "274677012401415",
+      "name": "Unknown 274677012401415",
+      "detectedAt": "2014-03-29T19:56:36Z",
+      "reason": "AIS gap 4035.5 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 4035.45,
+        "nextSeenAt": "2014-09-13T23:23:43Z",
+        "lastSpeedKnots": 11.9,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-198266627907369-1395432083",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 2.830495145,
+      "lon": 142.2877349834,
+      "mmsi": "198266627907369",
+      "name": "Drifting Longlines 198266627907369",
+      "detectedAt": "2014-03-21T20:01:23Z",
+      "reason": "AIS gap 7544.3 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 7544.3,
+        "nextSeenAt": "2015-01-30T04:19:18Z",
+        "lastSpeedKnots": 6.5801,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-175026518773038-1395128600",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -11.4993266992,
+      "lon": 112.5010681228,
+      "mmsi": "175026518773038",
+      "name": "Unknown 175026518773038",
+      "detectedAt": "2014-03-18T07:43:20Z",
+      "reason": "AIS gap 4016.9 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 4016.86,
+        "nextSeenAt": "2014-09-01T16:35:06Z",
+        "lastSpeedKnots": 20.331,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-75704340932214-1391541047",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 2.6224317551,
+      "lon": 142.1971282959,
+      "mmsi": "75704340932214",
+      "name": "Drifting Longlines 75704340932214",
+      "detectedAt": "2014-02-04T19:10:47Z",
+      "reason": "AIS gap 10468.4 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 10468.39,
+        "nextSeenAt": "2015-04-16T23:33:57Z",
+        "lastSpeedKnots": 6.8,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-208886908053041-1390999198",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 2.5422465801,
+      "lon": 142.2670593262,
+      "mmsi": "208886908053041",
+      "name": "Drifting Longlines 208886908053041",
+      "detectedAt": "2014-01-29T12:39:58Z",
+      "reason": "AIS gap 20014.7 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 20014.69,
+        "nextSeenAt": "2016-05-12T11:21:27Z",
+        "lastSpeedKnots": 5.9,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-117813837180006-1386071204",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -12.1168336868,
+      "lon": 92.0868301392,
+      "mmsi": "117813837180006",
+      "name": "Drifting Longlines 117813837180006",
+      "detectedAt": "2013-12-03T11:46:44Z",
+      "reason": "AIS gap 7419.9 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 7419.89,
+        "nextSeenAt": "2014-10-08T15:40:01Z",
+        "lastSpeedKnots": 11,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-204349732031005-1384689431",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 0.09966667,
+      "lon": 101.6908340454,
+      "mmsi": "204349732031005",
+      "name": "Drifting Longlines 204349732031005",
+      "detectedAt": "2013-11-17T11:57:11Z",
+      "reason": "AIS gap 8830.1 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 8830.06,
+        "nextSeenAt": "2014-11-20T10:01:01Z",
+        "lastSpeedKnots": 10,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-271347251834362-1379642574",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 8.1928329468,
+      "lon": 127.4225082397,
+      "mmsi": "271347251834362",
+      "name": "Drifting Longlines 271347251834362",
+      "detectedAt": "2013-09-20T02:02:54Z",
+      "reason": "AIS gap 18340.3 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 18340.28,
+        "nextSeenAt": "2015-10-24T06:19:58Z",
+        "lastSpeedKnots": 9.3,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1377451825",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -6.861000061,
+      "lon": 112.2863311768,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-08-25T17:30:25Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 106642.0 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 106642.04,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "godark-197235271847792-1374759103",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 3.4372678785,
+      "lon": 141.3601044882,
+      "mmsi": "197235271847792",
+      "name": "Drifting Longlines 197235271847792",
+      "detectedAt": "2013-07-25T13:31:43Z",
+      "reason": "AIS gap 17125.4 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 17125.41,
+        "nextSeenAt": "2015-07-09T02:56:26Z",
+        "lastSpeedKnots": 107.1259,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1374519263",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 4.3696665764,
+      "lon": 129.3085021973,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-07-22T18:54:23Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 17443.5 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 17443.51,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1373845385",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 6.271999836,
+      "lon": 103.4541702271,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-07-14T23:43:05Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 17090.7 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 17090.71,
+        "deltaHours": 0.08,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1373756306",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 5.8638334274,
+      "lon": 114.4541625977,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-07-13T22:58:26Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 123867.6 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 123867.62,
+        "deltaHours": 0.01,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1373756266",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 5.897166729,
+      "lon": 137.5,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-07-13T22:57:46Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 24038.1 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 24038.14,
+        "deltaHours": 0.03,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1373458082",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -5.1079998016,
+      "lon": 125.4140014648,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-07-10T12:08:02Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 9962.1 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 9962.06,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1373082591",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 8.3669996262,
+      "lon": 116.1918411255,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-07-06T03:49:51Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 31432.2 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 31432.24,
+        "deltaHours": 0.04,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "godark-23406746127304-1372425291",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 8.0985984802,
+      "lon": 135.0745391846,
+      "mmsi": "23406746127304",
+      "name": "Drifting Longlines 23406746127304",
+      "detectedAt": "2013-06-28T13:14:51Z",
+      "reason": "AIS gap 8836.8 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 8836.82,
+        "nextSeenAt": "2014-07-01T18:04:06Z",
+        "lastSpeedKnots": 7.6,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-67346977622820-1371449966",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 6.1251462311,
+      "lon": 142.2717964106,
+      "mmsi": "67346977622820",
+      "name": "Unknown 67346977622820",
+      "detectedAt": "2013-06-17T06:19:26Z",
+      "reason": "AIS gap 5929.8 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 5929.83,
+        "nextSeenAt": "2014-02-19T08:09:12Z",
+        "lastSpeedKnots": 6.4881,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1371074473",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 8.1071662903,
+      "lon": 137.5,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-06-12T22:01:13Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 21727.3 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 21727.25,
+        "deltaHours": 0.05,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "godark-183307128826540-1370857366",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 4.8363718987,
+      "lon": 142.463180542,
+      "mmsi": "183307128826540",
+      "name": "Unknown 183307128826540",
+      "detectedAt": "2013-06-10T09:42:46Z",
+      "reason": "AIS gap 7786.9 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 7786.86,
+        "nextSeenAt": "2014-04-30T20:34:16Z",
+        "lastSpeedKnots": 13.6,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-75704340932214-1370048197",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 7.8895950317,
+      "lon": 142.0162200928,
+      "mmsi": "75704340932214",
+      "name": "Drifting Longlines 75704340932214",
+      "detectedAt": "2013-06-01T00:56:37Z",
+      "reason": "AIS gap 4506.5 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 4506.5,
+        "nextSeenAt": "2013-12-05T19:26:37Z",
+        "lastSpeedKnots": 6.1,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-263392518194890-1368861725",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 6.9091084283,
+      "lon": 142.4716491516,
+      "mmsi": "263392518194890",
+      "name": "Drifting Longlines 263392518194890",
+      "detectedAt": "2013-05-18T07:22:05Z",
+      "reason": "AIS gap 8358.0 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 8358.05,
+        "nextSeenAt": "2014-05-01T13:24:54Z",
+        "lastSpeedKnots": 10.0121,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1368607616",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -7.1003332138,
+      "lon": 116.9898376465,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-05-15T08:46:56Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 9810.0 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 9810.03,
+        "deltaHours": 0.01,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1367809524",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": 8.1403331757,
+      "lon": 123.2913360596,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-05-06T03:05:24Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 64698.6 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 64698.61,
+        "deltaHours": 0.02,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "godark-274677012401415-1365824899",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -12.294836998,
+      "lon": 113.1766662598,
+      "mmsi": "274677012401415",
+      "name": "Unknown 274677012401415",
+      "detectedAt": "2013-04-13T03:48:19Z",
+      "reason": "AIS gap 3882.3 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 3882.25,
+        "nextSeenAt": "2013-09-21T22:03:31Z",
+        "lastSpeedKnots": 11.4,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "spoofing-33266086194351-1365809406",
+      "type": "SPOOFING",
+      "severity": "HIGH",
+      "lat": -5.6806664467,
+      "lon": 119.2600021362,
+      "mmsi": "33266086194351",
+      "name": "Drifting Longlines 33266086194351",
+      "detectedAt": "2013-04-12T23:30:06Z",
+      "reason": "Loncatan Kalman menghasilkan implied speed 23012.6 knot.",
+      "confidence": 0.98,
+      "method": "implied_speed_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "impliedSpeedKnots": 23012.55,
+        "deltaHours": 0.05,
+        "jumpMeters": 0,
+        "correctionMeters": 0
+      }
+    },
+    {
+      "id": "godark-89470223580135-1365533950",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 7.4076752988,
+      "lon": 142.222508685,
+      "mmsi": "89470223580135",
+      "name": "Unknown 89470223580135",
+      "detectedAt": "2013-04-09T18:59:10Z",
+      "reason": "AIS gap 9018.3 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 9018.34,
+        "nextSeenAt": "2014-04-20T13:19:19Z",
+        "lastSpeedKnots": 10.4174,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-204349732031005-1365367221",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 2.1733334064,
+      "lon": 103.9208297729,
+      "mmsi": "204349732031005",
+      "name": "Drifting Longlines 204349732031005",
+      "detectedAt": "2013-04-07T20:40:21Z",
+      "reason": "AIS gap 5367.3 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 5367.28,
+        "nextSeenAt": "2013-11-17T11:57:11Z",
+        "lastSpeedKnots": 0,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-30373804074051-1364614240",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -12.0481960504,
+      "lon": 113.1513621142,
+      "mmsi": "30373804074051",
+      "name": "Drifting Longlines 30373804074051",
+      "detectedAt": "2013-03-30T03:30:40Z",
+      "reason": "AIS gap 5643.3 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 5643.29,
+        "nextSeenAt": "2013-11-20T06:48:14Z",
+        "lastSpeedKnots": 145.4829,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-112775316220783-1363785456",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 4.3563566208,
+      "lon": 141.5946960449,
+      "mmsi": "112775316220783",
+      "name": "Unknown 112775316220783",
+      "detectedAt": "2013-03-20T13:17:36Z",
+      "reason": "AIS gap 16453.2 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 16453.19,
+        "nextSeenAt": "2015-02-04T02:28:49Z",
+        "lastSpeedKnots": 8,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-10880510825243-1362498663",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 8.3440485001,
+      "lon": 142.1755523682,
+      "mmsi": "10880510825243",
+      "name": "Purse Seines 10880510825243",
+      "detectedAt": "2013-03-05T15:51:03Z",
+      "reason": "AIS gap 8420.9 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "purse_seines.csv",
+      "evidence": {
+        "gapHours": 8420.89,
+        "nextSeenAt": "2014-02-19T12:44:09Z",
+        "lastSpeedKnots": 14.1,
+        "gear": "purse_seines"
+      }
+    },
+    {
+      "id": "godark-87919276942456-1360424146",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -12.1278333664,
+      "lon": 110.3775024414,
+      "mmsi": "87919276942456",
+      "name": "Drifting Longlines 87919276942456",
+      "detectedAt": "2013-02-09T15:35:46Z",
+      "reason": "AIS gap 13685.0 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 13685.01,
+        "nextSeenAt": "2014-09-02T20:36:38Z",
+        "lastSpeedKnots": 11.1,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-192803403297411-1359420039",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 6.8338799477,
+      "lon": 142.3442382812,
+      "mmsi": "192803403297411",
+      "name": "Purse Seines 192803403297411",
+      "detectedAt": "2013-01-29T00:40:39Z",
+      "reason": "AIS gap 9287.9 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "purse_seines.csv",
+      "evidence": {
+        "gapHours": 9287.86,
+        "nextSeenAt": "2014-02-20T00:32:33Z",
+        "lastSpeedKnots": 14.2,
+        "gear": "purse_seines"
+      }
+    },
+    {
+      "id": "godark-38322969102051-1358350821",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 1.2848277909,
+      "lon": 142.2825022348,
+      "mmsi": "38322969102051",
+      "name": "Purse Seines 38322969102051",
+      "detectedAt": "2013-01-16T15:40:21Z",
+      "reason": "AIS gap 22232.4 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "purse_seines.csv",
+      "evidence": {
+        "gapHours": 22232.37,
+        "nextSeenAt": "2015-08-01T00:02:45Z",
+        "lastSpeedKnots": 12.4196,
+        "gear": "purse_seines"
+      }
+    },
+    {
+      "id": "godark-43935946737362-1357118460",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -0.3386754178,
+      "lon": 142.3275576054,
+      "mmsi": "43935946737362",
+      "name": "Purse Seines 43935946737362",
+      "detectedAt": "2013-01-02T09:21:00Z",
+      "reason": "AIS gap 26486.3 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "purse_seines.csv",
+      "evidence": {
+        "gapHours": 26486.31,
+        "nextSeenAt": "2016-01-10T23:39:18Z",
+        "lastSpeedKnots": 13.3261,
+        "gear": "purse_seines"
+      }
+    },
+    {
+      "id": "godark-117813837180006-1356674534",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -10.2783336639,
+      "lon": 93.2153320312,
+      "mmsi": "117813837180006",
+      "name": "Drifting Longlines 117813837180006",
+      "detectedAt": "2012-12-28T06:02:14Z",
+      "reason": "AIS gap 6405.2 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 6405.24,
+        "nextSeenAt": "2013-09-21T03:16:21Z",
+        "lastSpeedKnots": 11.8,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-23406746127304-1355608748",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 3.5824311237,
+      "lon": 141.3250122734,
+      "mmsi": "23406746127304",
+      "name": "Drifting Longlines 23406746127304",
+      "detectedAt": "2012-12-15T21:59:08Z",
+      "reason": "AIS gap 4596.1 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 4596.15,
+        "nextSeenAt": "2013-06-25T10:07:55Z",
+        "lastSpeedKnots": 6.2747,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "godark-10880510825243-1340136173",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 8.3946504593,
+      "lon": 141.7346954346,
+      "mmsi": "10880510825243",
+      "name": "Purse Seines 10880510825243",
+      "detectedAt": "2012-06-19T20:02:53Z",
+      "reason": "AIS gap 4084.7 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "purse_seines.csv",
+      "evidence": {
+        "gapHours": 4084.71,
+        "nextSeenAt": "2012-12-07T00:45:17Z",
+        "lastSpeedKnots": 13.7,
+        "gear": "purse_seines"
+      }
+    },
+    {
+      "id": "godark-89470223580135-1332956512",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 7.8471665382,
+      "lon": 142.4651794434,
+      "mmsi": "89470223580135",
+      "name": "Unknown 89470223580135",
+      "detectedAt": "2012-03-28T17:41:52Z",
+      "reason": "AIS gap 9042.8 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 9042.79,
+        "nextSeenAt": "2013-04-09T12:29:13Z",
+        "lastSpeedKnots": 10.4,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-274677012401415-1329268963",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": 7.2090802193,
+      "lon": 127.8246231079,
+      "mmsi": "274677012401415",
+      "name": "Unknown 274677012401415",
+      "detectedAt": "2012-02-15T01:22:43Z",
+      "reason": "AIS gap 5269.9 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "unknown.csv",
+      "evidence": {
+        "gapHours": 5269.9,
+        "nextSeenAt": "2012-09-21T15:16:54Z",
+        "lastSpeedKnots": 11,
+        "gear": "unknown"
+      }
+    },
+    {
+      "id": "godark-117813837180006-1325430735",
+      "type": "GO_DARK",
+      "severity": "HIGH",
+      "lat": -11.7866668701,
+      "lon": 110.170501709,
+      "mmsi": "117813837180006",
+      "name": "Drifting Longlines 117813837180006",
+      "detectedAt": "2012-01-01T15:12:15Z",
+      "reason": "AIS gap 6808.6 jam sebelum sinyal berikutnya muncul.",
+      "confidence": 0.98,
+      "method": "ais_gap_rule",
+      "dataset": "drifting_longlines.csv",
+      "evidence": {
+        "gapHours": 6808.59,
+        "nextSeenAt": "2012-10-11T07:47:46Z",
+        "lastSpeedKnots": 12,
+        "gear": "drifting_longlines"
+      }
+    },
+    {
+      "id": "sar-patch-241996059280485-1",
+      "type": "SAR_NO_AIS",
+      "severity": "MEDIUM",
+      "lat": 1.9776723862,
+      "lon": 102.2710129122,
+      "mmsi": "241996059280485",
+      "name": "Unknown patch 241996059280485",
+      "detectedAt": "2015-11-17T11:25:25Z",
+      "reason": "Patch SAR tercatat sebagai kandidat tanpa pasangan AIS yang kuat.",
+      "confidence": 0.62,
+      "method": "sar_patch_index",
+      "dataset": "sar_patches/patch_index.csv",
+      "evidence": {
+        "gear": "unknown",
+        "gearLabel": "Unknown",
+        "aisTime": "2015-11-17T12:17:12Z",
+        "sceneTime": "2015-11-17T11:25:25Z",
+        "timeDeltaHours": 0.8630555555555556,
+        "patchSize": 128,
+        "sceneName": "S1A_IW_GRDH_1SSV_20151117T112525_20151117T112555_008644_00C487_FCD9",
+        "patchPng": "/data/sar_patches/001_gear-unknown_mmsi-241996059280485_ais-20151117T121712Z_sar-20151117T112525Z_dt-52m_128px_kalman_dataset_original_scene-FCD9.png",
+        "previewPng": "/data/sar_patches/001_gear-unknown_mmsi-241996059280485_ais-20151117T121712Z_sar-20151117T112525Z_dt-52m_128px_kalman_dataset_original_scene-FCD9_preview.png"
+      }
+    },
+    {
+      "id": "ais-sar-match-77182424306278-1",
+      "type": "AIS_SAR_MATCH",
+      "severity": "LOW",
+      "lat": 2.3973033428,
+      "lon": 101.7420501709,
+      "mmsi": "77182424306278",
+      "name": "Drifting Longlines 77182424306278",
+      "detectedAt": "2015-07-25T11:33:35Z",
+      "reason": "AIS point memiliki kandidat scene Sentinel-1 dari ASF Search.",
+      "confidence": 0.58,
+      "method": "ais_sar_metadata_match",
+      "dataset": "ais_sar_matches.json",
+      "evidence": {
+        "gear": "drifting_longlines",
+        "speedKnots": 11.899999618499999,
+        "course": 310,
+        "sceneName": "S1A_IW_GRDH_1SDV_20150725T113335_20150725T113357_006967_009717_EBC9",
+        "timeDeltaHours": 0.8744444444444445,
+        "processingLevel": "GRD_HD"
+      }
+    }
+  ]
+}
